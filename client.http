@@ -14,3 +14,15 @@ GET http://localhost:8000/api/prestamos/3/detail
 
 ###
 GET http://localhost:8000/api/clientes/prestamos/1
+
+
+###
+PUT  http://localhost:8000/api/cobradores/1
+content-type: application/json
+
+{
+    "nombres": "perrote",
+    "apellidos": "bedoya",
+    "dpi": "3201526770501",
+    "telefono": "78893212"
+}

@@ -15,15 +15,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const connection_1 = __importDefault(require("../db/connection"));
-const user_1 = __importDefault(require("../routes/user"));
 const prestamos_1 = __importDefault(require("../routes/prestamos"));
 const clientes_1 = __importDefault(require("../routes/clientes"));
+const cobradores_1 = __importDefault(require("../routes/cobradores"));
+const cobros_1 = __importDefault(require("../routes/cobros"));
+const creditos_1 = __importDefault(require("../routes/creditos"));
+const rutas_1 = __importDefault(require("../routes/rutas"));
+const usuarios_1 = __importDefault(require("../routes/usuarios"));
 class Server {
     constructor() {
         this.apiPaths = {
-            usuarios: '/api/usuarios',
             prestamos: '/api/prestamos',
-            clientes: '/api/clientes'
+            clientes: '/api/clientes',
+            cobradores: '/api/cobradores',
+            cobros: '/api/cobros',
+            creditos: '/api/creditos',
+            rutas: '/api/rutas',
+            usuarios: '/api/usuarios'
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || '8000';
@@ -47,9 +55,13 @@ class Server {
         });
     }
     routes() {
-        this.app.use(this.apiPaths.usuarios, user_1.default);
         this.app.use(this.apiPaths.prestamos, prestamos_1.default);
         this.app.use(this.apiPaths.clientes, clientes_1.default);
+        this.app.use(this.apiPaths.cobradores, cobradores_1.default);
+        this.app.use(this.apiPaths.cobros, cobros_1.default);
+        this.app.use(this.apiPaths.creditos, creditos_1.default);
+        this.app.use(this.apiPaths.rutas, rutas_1.default);
+        this.app.use(this.apiPaths.usuarios, usuarios_1.default);
     }
     listen() {
         this.app.listen(this.port, () => {
