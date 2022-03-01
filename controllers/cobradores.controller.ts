@@ -1,31 +1,21 @@
 import { Request, Response } from "express"
 import { QueryTypes } from 'sequelize'
 import db from "../db/connection"
-import Cobradores from '../services/Cobradores';
+import Cobradores from '../services/cobradores.service';
 
 export const getAll = async (req: Request, res: Response) => {
-    let query = 'select * from '
-    const resx = await db.query(query, { type: QueryTypes.SELECT })
-
-    res.json({
-        response: resx
-    })
+    const resp = await Cobradores.getAll()
+    if (resp.success) return res.status(200).json(resp.response)
+    return res.status(500).json(resp.response)
 }
 
 export const get = async (req: Request, res: Response) => {
     const { id } = req.params
-    let query = 'select a.*, c.* from cobradores a, rutasCobradores b, rutas c'
-                +'where b.idCobrador = a.id and c.id = b.idRuta'
-    const resp = await db.query(query, 
-        { 
-            replacements: { id },
-            type: QueryTypes.SELECT 
-        })
-    res.json({
-        response: resp
-    })
+    const resp = await Cobradores.get(parseInt(id))
+    if (resp.success && Object.keys(resp.response).length === 0) return res.status(404).json(resp.response)
+    if (resp.success) return res.status(200).json(resp.response)
+    return res.status(500).json(resp.response)
 }
-
 
 export const create = async (req: Request, res: Response) => {
     const { body } = req
@@ -40,6 +30,12 @@ export const update = async (req: Request, res: Response) => {
     const { id } = req.params
     const { body } = req
     const response = await Cobradores.update(body, parseInt(id))
+    res.json(response)
+}
+
+export const getClientes = async (req: Request, res: Response) => {
+    const { id } = req.params
+    const response = await Cobradores.getClientes(parseInt(id))
     res.json(response)
 }
 

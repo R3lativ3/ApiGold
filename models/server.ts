@@ -3,7 +3,7 @@ import cors from 'cors'
 import db from '../db/connection';
 import prestamosRoutes from '../routes/prestamos'
 import clientesRoutes from '../routes/clientes'
-import cobradoresRoutes from '../routes/cobradores'
+import cobradoresRoutes from '../routes/cobradores.route'
 import cobrosRoutes from '../routes/cobros'
 import creditosRoutes from '../routes/creditos'
 import rutasRoutes from '../routes/rutas'
