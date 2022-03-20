@@ -14,29 +14,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const connection_1 = __importDefault(require("../db/connection"));
 const sequelize_1 = require("sequelize");
-class Cobradores {
+class Prestamos {
     static isValidCreateRequest(body) {
-        if (body.nombres && body.apellidos && body.dpi && body.telefono && body.idUsuario)
+        const [idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto] = body;
+        if (idRutaCobrador && idUsuario && idCliente && idTipoPrestamo && idMonto)
             return true;
         return false;
     }
     static create(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            let query = 'insert into cobradores (nombres, apellidos, dpi, telefono, idUsuario) '
-                + 'values (:nombres, :apellidos, :dpi, :telefono, :idUsuario)';
+            let query = `INSERT INTO prestamos (fecha, idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto)
+                    VALUES (now(), :idRutaCobrador, :idUsuario, :idCliente, :idTipoPrestamo, :idMonto)`;
             try {
+                const [idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto] = body;
                 const resp = yield connection_1.default.query(query, {
-                    replacements: {
-                        nombres: body.nombres,
-                        apellidos: body.apellidos,
-                        dpi: body.dpi,
-                        telefono: body.telefono,
-                        idUsuario: body.idUsuario
-                    },
+                    replacements: { idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto },
                     type: sequelize_1.QueryTypes.INSERT
                 });
                 const [results, metadata] = resp;
-                return { success: true, message: "ID: " + results + " affected rows: " + metadata };
+                return { success: true, message: `ID: ${results}, affected rows: ${metadata}` };
             }
             catch (exception) {
                 return { success: false, message: exception };
@@ -45,54 +41,23 @@ class Cobradores {
     }
     static update(body, id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const objectUpdate = this.getUpdateString(body, id);
-            const replacements = objectUpdate.obj;
+            let query = `UPDATE prestamos set idMonto = :idMonto where id = :id`;
             try {
-                const resp = yield connection_1.default.query(objectUpdate.query, {
-                    replacements: replacements,
+                const resp = yield connection_1.default.query(query, {
+                    replacements: { cobro: body.idMonto, id },
                     type: sequelize_1.QueryTypes.UPDATE
                 });
                 const [results, metadata] = resp;
-                return { success: true, message: "Affected rows: " + metadata };
+                return { success: true, message: `Affected rows: ${metadata}` };
             }
             catch (exception) {
                 return { success: false, message: exception };
             }
         });
     }
-    static getUpdateString(body, id) {
-        let resp = 'update cobradores set';
-        let obj = {};
-        if (body.nombres) {
-            resp += ' nombres = :nombres,';
-            obj.nombres = body.nombres;
-        }
-        if (body.apellidos) {
-            resp += ' apellidos = :apellidos,';
-            obj.apellidos = body.apellidos;
-        }
-        if (body.dpi) {
-            resp += ' dpi = :dpi,';
-            obj.dpi = body.dpi;
-        }
-        if (body.telefono) {
-            resp += ' telefono = :telefono,';
-            obj.telefono = body.telefono;
-        }
-        if (body.idUsuario) {
-            resp += ' idUsuario = :idUsuario';
-            obj.idUsuario = body.idUsuario;
-        }
-        if (resp.charAt(resp.length - 1) === ',')
-            resp = resp.slice(0, -1);
-        resp += ' WHERE id = :id ';
-        obj.id = id;
-        let response = { query: resp, obj };
-        return response;
-    }
     static getAll() {
         return __awaiter(this, void 0, void 0, function* () {
-            let query = 'select a.id, a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
+            let query = 'select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
                 + 'from cobradores a '
                 + 'left join rutasCobradores b '
                 + '   on a.id = b.idCobrador '
@@ -140,5 +105,5 @@ class Cobradores {
         });
     }
 }
-exports.default = Cobradores;
-//# sourceMappingURL=cobradores.service.js.map
+exports.default = Prestamos;
+//# sourceMappingURL=prestamos.service.js.map

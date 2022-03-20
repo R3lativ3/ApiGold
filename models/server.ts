@@ -30,7 +30,7 @@ class Server{
         this.middlewares()
         this.routes()
     }
-
+    
     middlewares(){
         this.app.use(cors())
         this.app.use(express.json())

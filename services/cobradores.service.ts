@@ -85,7 +85,7 @@ class Cobradores {
     } 
 
     public static async getAll(): Promise<QueryResponse>{
-        let query = 'select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
+        let query = 'select a.id, a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
                     +'from cobradores a '
                     +'left join rutasCobradores b '
                     +'   on a.id = b.idCobrador '
