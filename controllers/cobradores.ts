@@ -4,7 +4,7 @@ import db from "../db/connection"
 import Cobradores from '../services/Cobradores';
 
 export const getAll = async (req: Request, res: Response) => {
-    let query = 'select * from '
+    let query = 'select a.*, c.* from cobradores a, rutasCobradores b, rutas c where b.idCobrador = a.id and c.id = b.idRuta'
     const resx = await db.query(query, { type: QueryTypes.SELECT })
 
     res.json({

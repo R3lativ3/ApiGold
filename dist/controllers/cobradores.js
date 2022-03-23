@@ -17,7 +17,7 @@ const sequelize_1 = require("sequelize");
 const connection_1 = __importDefault(require("../db/connection"));
 const Cobradores_1 = __importDefault(require("../services/Cobradores"));
 const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let query = 'select * from ';
+    let query = 'select a.*, c.* from cobradores a, rutasCobradores b, rutas c where b.idCobrador = a.id and c.id = b.idRuta';
     const resx = yield connection_1.default.query(query, { type: sequelize_1.QueryTypes.SELECT });
     res.json({
         response: resx
