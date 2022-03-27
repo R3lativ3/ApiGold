@@ -90,7 +90,26 @@ class Cobradores {
         let response = { query: resp, obj };
         return response;
     }
-    static getRuta(id) {
+    static getAll() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let query = 'select a.id, a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
+                + 'from cobradores a '
+                + 'left join rutasCobradores b '
+                + '   on a.id = b.idCobrador '
+                + 'left join rutas c '
+                + '   on c.id = b.idRuta '
+                + 'left join sedesGold d '
+                + '   on d.id = c.idSede ';
+            try {
+                const resp = yield connection_1.default.query(query, { type: sequelize_1.QueryTypes.SELECT });
+                return { success: true, response: resp };
+            }
+            catch (exception) {
+                return { success: false, response: exception };
+            }
+        });
+    }
+    static get(id) {
         return __awaiter(this, void 0, void 0, function* () {
             let query = 'select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
                 + 'from cobradores a, rutasCobradores b, rutas c, sedesGold d '
@@ -104,6 +123,22 @@ class Cobradores {
             }
         });
     }
+    static getClientes(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let query = `
+            select a.fecha as fechaEntrega, c.nombres, c.apellidos, d.montoEntregado, d.plazoDias, d.montoConInteres
+            from prestamos a, rutasCobradores b, clientes c, MontoPrestamos d
+            where a.idRutaCobrador = b.id and a.idCliente = c.id and a.idMonto = d.id and b.idCobrador = :id
+        `;
+            try {
+                const resp = yield connection_1.default.query(query, { replacements: { id }, type: sequelize_1.QueryTypes.SELECT });
+                return { success: true, response: resp };
+            }
+            catch (exception) {
+                return { success: false, response: exception };
+            }
+        });
+    }
 }
 exports.default = Cobradores;
-//# sourceMappingURL=Cobradores.js.map
+//# sourceMappingURL=cobradores.service.js.map

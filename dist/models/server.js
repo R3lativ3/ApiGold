@@ -17,7 +17,7 @@ const cors_1 = __importDefault(require("cors"));
 const connection_1 = __importDefault(require("../db/connection"));
 const prestamos_1 = __importDefault(require("../routes/prestamos"));
 const clientes_1 = __importDefault(require("../routes/clientes"));
-const cobradores_1 = __importDefault(require("../routes/cobradores"));
+const cobradores_route_1 = __importDefault(require("../routes/cobradores.route"));
 const cobros_1 = __importDefault(require("../routes/cobros"));
 const creditos_1 = __importDefault(require("../routes/creditos"));
 const rutas_1 = __importDefault(require("../routes/rutas"));
@@ -57,7 +57,7 @@ class Server {
     routes() {
         this.app.use(this.apiPaths.prestamos, prestamos_1.default);
         this.app.use(this.apiPaths.clientes, clientes_1.default);
-        this.app.use(this.apiPaths.cobradores, cobradores_1.default);
+        this.app.use(this.apiPaths.cobradores, cobradores_route_1.default);
         this.app.use(this.apiPaths.cobros, cobros_1.default);
         this.app.use(this.apiPaths.creditos, creditos_1.default);
         this.app.use(this.apiPaths.rutas, rutas_1.default);
