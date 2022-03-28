@@ -17,7 +17,9 @@ export const get = async (req: Request, res: Response) => {
 
 export const create = async (req: Request, res: Response) => {
     const { body } = req
+
     if(!Cobradores.isValidCreateRequest(body)) res.status(400).json({error: 'Invalid request body'})
+    
     const response = await Cobradores.create(body)
     res.json(response) 
 }

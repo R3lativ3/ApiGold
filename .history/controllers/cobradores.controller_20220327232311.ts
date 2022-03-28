@@ -1,4 +1,6 @@
 import { Request, Response } from "express"
+import { QueryTypes } from 'sequelize'
+import db from "../db/connection"
 import Cobradores from '../services/cobradores.service';
 
 export const getAll = async (req: Request, res: Response) => {
@@ -17,7 +19,9 @@ export const get = async (req: Request, res: Response) => {
 
 export const create = async (req: Request, res: Response) => {
     const { body } = req
+
     if(!Cobradores.isValidCreateRequest(body)) res.status(400).json({error: 'Invalid request body'})
+    
     const response = await Cobradores.create(body)
     res.json(response) 
 }
