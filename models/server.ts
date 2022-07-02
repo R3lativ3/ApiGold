@@ -1,13 +1,13 @@
 import express, { Application } from 'express'
 import cors from 'cors'
 import db from '../db/connection';
-import prestamosRoutes from '../routes/prestamos'
-import clientesRoutes from '../routes/clientes'
-import cobradoresRoutes from '../routes/cobradores.route'
-import cobrosRoutes from '../routes/cobros'
-import creditosRoutes from '../routes/creditos'
-import rutasRoutes from '../routes/rutas'
-import usuariosRoutes from '../routes/usuarios'
+import prestamosRoutes from '../routes/prestamosRoutes'
+import clientesRoutes from '../routes/clientesRoutes'
+import cobradoresRoutes from '../routes/cobradoresRoutes'
+import cobrosRoutes from '../routes/cobrosRoutes'
+import creditosRoutes from '../routes/creditosRoutes'
+import rutasRoutes from '../routes/rutasRoutes'
+import usuariosRoutes from '../routes/usuariosRoutes'
 
 class Server{
     
