@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getAll, get, create, update } from '../controllers/creditos'
+import { getAll, get, create, update } from '../controllers/creditosController'
 
 const router = Router()
 

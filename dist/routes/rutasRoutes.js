@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const rutas_controller_1 = require("../controllers/rutas.controller");
+const rutasController_1 = require("../controllers/rutasController");
 const router = (0, express_1.Router)();
-router.get('/', rutas_controller_1.ObtenerTodos);
-router.get('/:id/prestamos', rutas_controller_1.ObtenerPrestamosPorRuta);
-router.post('/', rutas_controller_1.create);
-router.put('/:id', rutas_controller_1.update);
+router.get('/', rutasController_1.ObtenerTodos);
+router.get('/:id/prestamos', rutasController_1.ObtenerPrestamosPorRuta);
+router.post('/', rutasController_1.create);
+router.put('/:id', rutasController_1.update);
 exports.default = router;
 //# sourceMappingURL=rutasRoutes.js.map
