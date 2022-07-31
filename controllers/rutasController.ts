@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import Rutas from '../services/rutas.service';
+import Rutas from '../services/rutasService';
 
 export const ObtenerTodos = async (res: Response) => {
     const resp = await Rutas.getAll()

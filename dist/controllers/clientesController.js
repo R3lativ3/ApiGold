@@ -71,4 +71,4 @@ const update = (req, res) => {
     });
 };
 exports.update = update;
-//# sourceMappingURL=clientes.js.map
+//# sourceMappingURL=clientesController.js.map

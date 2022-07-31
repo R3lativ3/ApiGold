@@ -15,13 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const connection_1 = __importDefault(require("../db/connection"));
-const prestamos_1 = __importDefault(require("../routes/prestamos"));
-const clientes_1 = __importDefault(require("../routes/clientes"));
-const cobradores_route_1 = __importDefault(require("../routes/cobradores.route"));
-const cobros_1 = __importDefault(require("../routes/cobros"));
-const creditos_1 = __importDefault(require("../routes/creditos"));
-const rutas_1 = __importDefault(require("../routes/rutas"));
-const usuarios_1 = __importDefault(require("../routes/usuarios"));
+const prestamosRoutes_1 = __importDefault(require("../routes/prestamosRoutes"));
+const clientesRoutes_1 = __importDefault(require("../routes/clientesRoutes"));
+const cobradoresRoutes_1 = __importDefault(require("../routes/cobradoresRoutes"));
+const cobrosRoutes_1 = __importDefault(require("../routes/cobrosRoutes"));
+const creditosRoutes_1 = __importDefault(require("../routes/creditosRoutes"));
+const rutasRoutes_1 = __importDefault(require("../routes/rutasRoutes"));
+const usuariosRoutes_1 = __importDefault(require("../routes/usuariosRoutes"));
 class Server {
     constructor() {
         this.apiPaths = {
@@ -55,13 +55,13 @@ class Server {
         });
     }
     routes() {
-        this.app.use(this.apiPaths.prestamos, prestamos_1.default);
-        this.app.use(this.apiPaths.clientes, clientes_1.default);
-        this.app.use(this.apiPaths.cobradores, cobradores_route_1.default);
-        this.app.use(this.apiPaths.cobros, cobros_1.default);
-        this.app.use(this.apiPaths.creditos, creditos_1.default);
-        this.app.use(this.apiPaths.rutas, rutas_1.default);
-        this.app.use(this.apiPaths.usuarios, usuarios_1.default);
+        this.app.use(this.apiPaths.prestamos, prestamosRoutes_1.default);
+        this.app.use(this.apiPaths.clientes, clientesRoutes_1.default);
+        this.app.use(this.apiPaths.cobradores, cobradoresRoutes_1.default);
+        this.app.use(this.apiPaths.cobros, cobrosRoutes_1.default);
+        this.app.use(this.apiPaths.creditos, creditosRoutes_1.default);
+        this.app.use(this.apiPaths.rutas, rutasRoutes_1.default);
+        this.app.use(this.apiPaths.usuarios, usuariosRoutes_1.default);
     }
     listen() {
         this.app.listen(this.port, () => {

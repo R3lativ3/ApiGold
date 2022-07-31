@@ -26,7 +26,8 @@ export const get = async (req: Request, res: Response) => {
 
 export const getPrestamosByCliente = async (req: Request, res: Response) => {
     const { id } = req.params
-    let query = 'select a.fecha as fechaPrestamo, b.nombres, b.apellidos, b.dpi, b.telefono, b.direccion, '+
+    let idx = parseInt(id)
+    let query = 'select a.fecha as fechaPrestamo, b.nombre, b.dpi, b.telefono, b.direccion, '+
                 'e.nombres as cobrador,  d.nombreRuta, f.montoEntregado, f.montoConInteres, f.plazoDias '+
                 'from prestamos a, clientes b, rutasCobradores c, rutas d, cobradores e, MontoPrestamos f '+
                 'where a.idCliente = b.id and a.idRutaCobrador = c.id and c.idRuta = d.id and c.idCobrador = e.id '+

@@ -46,4 +46,4 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     return res.json(response);
 });
 exports.update = update;
-//# sourceMappingURL=rutas.controller.js.map
+//# sourceMappingURL=rutasController.js.map

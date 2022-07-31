@@ -10,8 +10,10 @@ class Prestamos {
     }
 
     public static async create(body: any): Promise<generalResponse> {
-        let query = `INSERT INTO CobrosPrestamos (cobro, idPrestamo, lat, lon, fecha)
-                    VALUES (:cobro, :idPrestamo, :lat, :lon, getdate())`
+        let query = `
+            INSERT INTO CobrosPrestamos (cobro, idPrestamo, lat, lon, fecha)
+            VALUES (:cobro, :idPrestamo, :lat, :lon, getdate())
+        `
 
         try{
             const resp = await db.query(query, { 
@@ -48,15 +50,13 @@ class Prestamos {
     }
 
     public static async getAll(): Promise<QueryResponse>{
-        let query = 'select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
-                    +'from cobradores a '
-                    +'left join rutasCobradores b '
-                    +'   on a.id = b.idCobrador '
-                    +'left join rutas c '
-                    +'   on c.id = b.idRuta '
-                    +'left join sedesGold d '
-                    +'   on d.id = c.idSede '    
-
+        let query =  `
+            select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede 
+            from cobradores a 
+            left join rutasCobradores b on a.id = b.idCobrador 
+            left join rutas c on c.id = b.idRuta 
+            left join sedesGold d on d.id = c.idSede   
+        `
         try{
             const resp = await db.query(query, { type: QueryTypes.SELECT })
             return { success: true, response : resp }
@@ -67,9 +67,11 @@ class Prestamos {
     }
 
     public static async get(id: number): Promise<QueryResponse> {
-        let query = 'select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
-                    +'from cobradores a, rutasCobradores b, rutas c, sedesGold d '
-                    +'where b.idCobrador = a.id and c.id = b.idRuta and d.id = c.idSede and a.id = :id '
+        let query = `
+            select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede 
+            from cobradores a, rutasCobradores b, rutas c, sedesGold d 
+            where b.idCobrador = a.id and c.id = b.idRuta and d.id = c.idSede and a.id = :id 
+        `
         try{
             const resp = await db.query(query, { replacements: { id }, type: QueryTypes.SELECT })
             return { success: true, response : resp }

@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import Cobradores from '../services/cobradores.service';
+import Cobradores from '../services/cobradoresService';
 
 export const getAll = async (req: Request, res: Response) => {
     const resp = await Cobradores.getAll()

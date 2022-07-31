@@ -10,9 +10,10 @@ class Cobradores {
     }
 
     public static async create(body: any): Promise<generalResponse> {
-        let query = 'insert into cobradores (nombres, apellidos, dpi, telefono, idUsuario) '
-        +'values (:nombres, :apellidos, :dpi, :telefono, :idUsuario)'
-
+        let query = `
+            INSERT INTO cobradores (nombre, dpi, telefono, idUsuario) 
+            VALUES (:nombres, :dpi, :telefono, :idUsuario)
+        ` 
         try{
 
             const resp = await db.query(query, { 
@@ -35,11 +36,20 @@ class Cobradores {
     }
 
     public static async update(body:any, id: number): Promise<generalResponse> {
-        const objectUpdate = this.getUpdateString(body, id)
-        const replacements = objectUpdate.obj
+        let query = `
+            UPDATE cobradores 
+            SET nombre = :nombre, dpi = :dpi,  telefono = :telefono, idUsuario = :idUsuario
+            WHERE id = :id
+        `
+        const replacements = {
+            nombre: body.nombre,
+            dpi: body.dpi,
+            telefono: body.telefono,
+            idUsuario: body.idUsuario
+        }
         try{
-            const resp = await db.query(objectUpdate.query, { 
-                replacements: replacements,
+            const resp = await db.query(query, { 
+                replacements,
                 type: QueryTypes.UPDATE 
             })
             const [results, metadata] = resp
@@ -50,50 +60,14 @@ class Cobradores {
         }
     }
 
-    static getUpdateString (body: any, id: number) : updateModel  {
-        let resp = 'update cobradores set'
-        let obj : propertyModel = {}
-        if (body.nombres){
-            resp += ' nombres = :nombres,'
-            obj.nombres = body.nombres
-        }
-        if (body.apellidos){
-            resp += ' apellidos = :apellidos,'
-            obj.apellidos = body.apellidos
-        } 
-        if (body.dpi){
-            resp += ' dpi = :dpi,'
-            obj.dpi = body.dpi
-        } 
-        if (body.telefono){
-            resp += ' telefono = :telefono,'
-            obj.telefono = body.telefono
-        } 
-        if (body.idUsuario){
-            resp += ' idUsuario = :idUsuario'
-            obj.idUsuario = body.idUsuario
-        } 
-
-        if (resp.charAt(resp.length - 1) === ',') resp = resp.slice(0, -1)
-    
-        resp += ' WHERE id = :id '
-        obj.id = id
-    
-        let response: updateModel = { query : resp, obj }
-        
-        return response
-    } 
-
     public static async getAll(): Promise<QueryResponse>{
-        let query = 'select a.id, a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
-                    +'from cobradores a '
-                    +'left join rutasCobradores b '
-                    +'   on a.id = b.idCobrador '
-                    +'left join rutas c '
-                    +'   on c.id = b.idRuta '
-                    +'left join sedesGold d '
-                    +'   on d.id = c.idSede '    
-
+        let query = `
+            SELECT a.id, a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede
+            FROM cobradores a 
+            LEFT JOIN rutasCobradores b on a.id = b.idCobrador 
+            LEFT JOIN rutas c on c.id = b.idRuta 
+            LEFT JOIN sedesGold d on d.id = c.idSede  
+        ` 
         try{
             const resp = await db.query(query, { type: QueryTypes.SELECT })
             return { success: true, response : resp }
@@ -104,9 +78,11 @@ class Cobradores {
     }
 
     public static async get(id: number): Promise<QueryResponse> {
-        let query = 'select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
-                    +'from cobradores a, rutasCobradores b, rutas c, sedesGold d '
-                    +'where b.idCobrador = a.id and c.id = b.idRuta and d.id = c.idSede and a.id = :id '
+        let query = `
+            SELECT a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede 
+            FROM cobradores a, rutasCobradores b, rutas c, sedesGold d 
+            WHERE b.idCobrador = a.id and c.id = b.idRuta and d.id = c.idSede and a.id = :id 
+        ` 
         try{
             const resp = await db.query(query, { replacements: { id }, type: QueryTypes.SELECT })
             return { success: true, response : resp }
@@ -117,9 +93,9 @@ class Cobradores {
 
     public static async getClientes(id: number): Promise<QueryResponse> {
         let query = `
-            select a.fecha as fechaEntrega, c.nombres, c.apellidos, d.montoEntregado, d.plazoDias, d.montoConInteres
-            from prestamos a, rutasCobradores b, clientes c, MontoPrestamos d
-            where a.idRutaCobrador = b.id and a.idCliente = c.id and a.idMonto = d.id and b.idCobrador = :id
+            SELECT a.fecha as fechaEntrega, c.nombres, c.apellidos, d.montoEntregado, d.plazoDias, d.montoConInteres
+            FROM prestamos a, rutasCobradores b, clientes c, MontoPrestamos d
+            WHERE a.idRutaCobrador = b.id and a.idCliente = c.id and a.idMonto = d.id and b.idCobrador = :id
         `
         try{
             const resp = await db.query(query, { replacements: { id }, type: QueryTypes.SELECT })
