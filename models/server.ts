@@ -25,7 +25,7 @@ class Server{
 
     constructor() {
         this.app = express()
-        this.port = process.env.PORT || '443' 
+        this.port = '443' 
         this.databaseConnection()
         this.middlewares()
         this.routes()

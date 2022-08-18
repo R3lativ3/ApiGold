@@ -34,7 +34,7 @@ class Server {
             usuarios: '/api/usuarios'
         };
         this.app = (0, express_1.default)();
-        this.port = process.env.PORT || '8000';
+        this.port = '443';
         this.databaseConnection();
         this.middlewares();
         this.routes();
