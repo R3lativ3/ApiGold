@@ -15,7 +15,6 @@ class Cobradores {
             VALUES (:nombres, :dpi, :telefono, :idUsuario)
         ` 
         try{
-
             const resp = await db.query(query, { 
                 replacements: { 
                     nombres: body.nombres,
