@@ -13,45 +13,50 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.update = exports.create = exports.get = exports.getAll = void 0;
-const sequelize_1 = require("sequelize");
-const connection_1 = __importDefault(require("../db/connection"));
+const cobrosService_1 = __importDefault(require("../services/cobrosService"));
 const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let query = 'select * from ';
-    const resx = yield connection_1.default.query(query, { type: sequelize_1.QueryTypes.SELECT });
-    res.json({
-        response: resx
-    });
+    try {
+        const response = yield cobrosService_1.default.getAll();
+        res.json({ status: 0, response });
+    }
+    catch (excepcion) {
+        res.json({ status: 1, response: excepcion });
+    }
 });
 exports.getAll = getAll;
 const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    let query = 'select * from  where id = :id';
-    const resp = yield connection_1.default.query(query, {
-        replacements: { id },
-        type: sequelize_1.QueryTypes.SELECT
-    });
-    res.json({
-        response: resp
-    });
+    try {
+        const { id } = req.params;
+        console.log(id);
+        const response = yield cobrosService_1.default.get(parseInt(id));
+        res.json({ status: 0, response });
+    }
+    catch (excepcion) {
+        res.json({ status: 1, response: excepcion });
+    }
 });
 exports.get = get;
-const create = (req, res) => {
-    const { body } = req;
-    console.log(body);
-    res.json({
-        msg: 'post',
-        body
-    });
-};
+const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { body } = req;
+        const response = yield cobrosService_1.default.create(body);
+        res.json({ status: 0, response });
+    }
+    catch (excepcion) {
+        res.json({ status: 1, response: excepcion });
+    }
+});
 exports.create = create;
-const update = (req, res) => {
-    const { id } = req.params;
-    const { body } = req.params;
-    res.json({
-        msg: 'put',
-        body,
-        id
-    });
-};
+const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { body } = req;
+        const { id } = req.params;
+        const response = yield cobrosService_1.default.update(body, parseInt(id));
+        res.json({ status: 0, response });
+    }
+    catch (excepcion) {
+        res.json({ status: 1, response: excepcion });
+    }
+});
 exports.update = update;
 //# sourceMappingURL=cobrosController.js.map

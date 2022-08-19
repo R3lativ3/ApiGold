@@ -1,45 +1,48 @@
 import { Request, Response } from "express"
-import { QueryTypes } from 'sequelize'
-import db from "../db/connection"
+import cobrosService from "../services/cobrosService"
 
 export const getAll = async (req: Request, res: Response) => {
-    let query = 'select * from '
-    const resx = await db.query(query, { type: QueryTypes.SELECT })
-
-    res.json({
-        response: resx
-    })
+    try{
+        const response = await cobrosService.getAll()
+        res.json({ status : 0, response })
+    }
+    catch(excepcion: any){
+        res.json({ status : 1, response: excepcion })
+    }
 }
 
 export const get = async (req: Request, res: Response) => {
-    const { id } = req.params
-    let query = 'select * from  where id = :id'
-    const resp = await db.query(query, 
-        { 
-            replacements: { id },
-            type: QueryTypes.SELECT 
-        })
-    res.json({
-        response: resp
-    })
+    try{
+        const { id } = req.params
+        console.log(id)
+        const response = await cobrosService.get(parseInt(id))
+        res.json({ status : 0, response })
+    }
+    catch(excepcion: any){
+        res.json({ status : 1, response: excepcion })
+    }
 }
 
 
-export const create = (req: Request, res: Response) => {
-    const { body } = req
-    console.log(body)
-    res.json({
-        msg: 'post',
-        body
-    })
+export const create = async (req: Request, res: Response) => {
+    try{
+        const { body } = req
+        const response = await cobrosService.create(body)
+        res.json({ status : 0, response })
+    }
+    catch(excepcion: any){
+        res.json({ status : 1, response: excepcion })
+    }
 }
 
-export const update = (req: Request, res: Response) => {
-    const { id } = req.params
-    const { body } = req.params
-    res.json({
-        msg: 'put',
-        body,
-        id
-    })
+export const update = async (req: Request, res: Response) => {
+    try{
+        const { body } = req
+        const { id } = req.params
+        const response = await cobrosService.update(body, parseInt(id))
+        res.json({ status : 0, response })
+    }
+    catch(excepcion: any){
+        res.json({ status : 1, response: excepcion })
+    }
 }

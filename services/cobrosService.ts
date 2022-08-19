@@ -2,7 +2,7 @@ import { propertyModel, generalResponse, updateModel, QueryResponse } from '../m
 import db from "../db/connection"
 import { QueryTypes } from 'sequelize'
 
-class Prestamos {
+class CobrosService {
 
     public static isValidCreateRequest(body: any): boolean {
         if(body.idPrestamo && body.cobro) return true
@@ -14,7 +14,6 @@ class Prestamos {
             INSERT INTO CobrosPrestamos (cobro, idPrestamo, lat, lon, fecha)
             VALUES (:cobro, :idPrestamo, :lat, :lon, getdate())
         `
-
         try{
             const resp = await db.query(query, { 
                 replacements: { 
@@ -30,7 +29,7 @@ class Prestamos {
             return { success: true, message: `ID: ${results}, affected rows: ${metadata}`}
         }
         catch(exception: any){
-            return { success: false, message: exception }
+            throw exception
         }
     }
 
@@ -45,17 +44,26 @@ class Prestamos {
             return {success: true, message: `Affected rows: ${metadata}`}
         }
         catch(exception: any){
-            return { success: false, message: exception }
+            throw exception
         }
     }
 
     public static async getAll(): Promise<QueryResponse>{
         let query =  `
-            select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede 
-            from cobradores a 
-            left join rutasCobradores b on a.id = b.idCobrador 
-            left join rutas c on c.id = b.idRuta 
-            left join sedesGold d on d.id = c.idSede   
+            select 
+                a.idPrestamo,
+                a.id, 
+                a.cobro, 
+                a.lat, 
+                a.lon, 
+                a.fecha,
+                cli.nombre cliente,
+                rut.nombreRuta ruta
+            from CobrosPrestamos a
+            join prestamos b on b.id = a.idPrestamo
+            join clientes cli on cli.id = b.idCliente
+            join rutasCobradores ruc on b.idRutaCobrador = ruc.id
+            join rutas rut on ruc.idRuta = rut.id
         `
         try{
             const resp = await db.query(query, { type: QueryTypes.SELECT })
@@ -66,28 +74,25 @@ class Prestamos {
         }
     }
 
-    public static async get(id: number): Promise<QueryResponse> {
+    public static async get(idPrestamo: number): Promise<QueryResponse> {
         let query = `
-            select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede 
-            from cobradores a, rutasCobradores b, rutas c, sedesGold d 
-            where b.idCobrador = a.id and c.id = b.idRuta and d.id = c.idSede and a.id = :id 
+            select 
+                a.id, 
+                a.cobro, 
+                a.lat, 
+                a.lon, 
+                a.fecha,
+                cli.nombre cliente,
+                rut.nombreRuta ruta
+            from CobrosPrestamos a
+            join prestamos b on b.id = a.idPrestamo
+            join clientes cli on cli.id = b.idCliente
+            join rutasCobradores ruc on b.idRutaCobrador = ruc.id
+            join rutas rut on ruc.idRuta = rut.id
+            where a.idPrestamo = :idPrestamo
         `
         try{
-            const resp = await db.query(query, { replacements: { id }, type: QueryTypes.SELECT })
-            return { success: true, response : resp }
-        }catch(exception: any) {
-            return { success: false, response: exception}
-        }
-    }
-
-    public static async getClientes(id: number): Promise<QueryResponse> {
-        let query = `
-            select a.fecha as fechaEntrega, c.nombres, c.apellidos, d.montoEntregado, d.plazoDias, d.montoConInteres
-            from prestamos a, rutasCobradores b, clientes c, MontoPrestamos d
-            where a.idRutaCobrador = b.id and a.idCliente = c.id and a.idMonto = d.id and b.idCobrador = :id
-        `
-        try{
-            const resp = await db.query(query, { replacements: { id }, type: QueryTypes.SELECT })
+            const resp = await db.query(query, { replacements: { idPrestamo }, type: QueryTypes.SELECT })
             return { success: true, response : resp }
         }catch(exception: any) {
             return { success: false, response: exception}
@@ -96,4 +101,4 @@ class Prestamos {
 
 }
 
-export default Prestamos
+export default CobrosService

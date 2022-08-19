@@ -2,7 +2,7 @@ import { propertyModel, generalResponse, updateModel, QueryResponse } from '../m
 import db from "../db/connection"
 import { QueryTypes } from 'sequelize'
 
-class Prestamos {
+class PrestamosService {
 
     public static isValidCreateRequest(body: any): boolean {
         const [idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto] = body
@@ -10,84 +10,141 @@ class Prestamos {
         return false
     }
 
-    public static async create(body: any): Promise<generalResponse> {
-        let query = `INSERT INTO prestamos (fecha, idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto)
-                    VALUES (now(), :idRutaCobrador, :idUsuario, :idCliente, :idTipoPrestamo, :idMonto)`
-
-        try{
-            const [idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto] = body
-            const resp = await db.query(query, { 
-                replacements: { idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto },
-                type: QueryTypes.INSERT 
-            })
-            const [results, metadata] = resp
-            return { success: true, message: `ID: ${results}, affected rows: ${metadata}`}
-        }
-        catch(exception: any){
-            return { success: false, message: exception }
-        }
-    }
-
-    public static async update(body:any, id: number): Promise<generalResponse> {
-        let query = `UPDATE prestamos set idMonto = :idMonto where id = :id`
-        try{
-            const resp = await db.query(query, { 
-                replacements: {cobro: body.idMonto, id},
-                type: QueryTypes.UPDATE 
-            })
-            const [results, metadata] = resp
-            return {success: true, message: `Affected rows: ${metadata}`}
-        }
-        catch(exception: any){
-            return { success: false, message: exception }
-        }
-    }
-
     public static async getAll(): Promise<QueryResponse>{
-        let query = 'select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
-                    +'from cobradores a '
-                    +'left join rutasCobradores b '
-                    +'   on a.id = b.idCobrador '
-                    +'left join rutas c '
-                    +'   on c.id = b.idRuta '
-                    +'left join sedesGold d '
-                    +'   on d.id = c.idSede '    
+        let query = `
+            select a.fecha, 
+                a.activo, 
+                a.entregaEfectivo, 
+                cli.nombre cliente, 
+                r.nombreRuta ruta, 
+                co.nombres cobrador, 
+                c.nombreUsuario digitador, 
+                d.tipoPrestamo tipo, 
+                e.montoEntregado, 
+                e.montoConInteres, 
+                e.porcentajeInteres, 
+                e.plazoDias, 
+                e.cobroDiario cuota,
+                sum(cp.cobro) pagado, 
+                (sum(cp.cobro)/e.montoConInteres)*100 porcentaje
+            from prestamos a
+            join rutasCobradores b on a.idRutaCobrador = b.id
+            join rutas r on b.idRuta = r.id
+            join cobradores co on b.idCobrador = co.id
+            join usuarios c on a.idUsuario = c.id
+            join tiposPrestamos d on a.idTipoPrestamo = d.id
+            join MontoPrestamos e on a.idMonto = e.id
+            join clientes cli on cli.id = a.idCliente
+            left join CobrosPrestamos cp on a.id = cp.idPrestamo
+            where activo = 1 
+            group by a.fecha, a.activo, a.entregaEfectivo, r.nombreRuta, co.nombres, 
+            c.nombreUsuario, d.tipoPrestamo, e.montoConInteres, e.porcentajeInteres, e.plazoDias, e.cobroDiario
+        ` 
 
         try{
             const resp = await db.query(query, { type: QueryTypes.SELECT })
             return { success: true, response : resp }
         }
         catch(exception){
-            return { success: false, response: exception}
+            throw exception
         }
     }
 
     public static async get(id: number): Promise<QueryResponse> {
-        let query = 'select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
-                    +'from cobradores a, rutasCobradores b, rutas c, sedesGold d '
-                    +'where b.idCobrador = a.id and c.id = b.idRuta and d.id = c.idSede and a.id = :id '
+        let header = `
+            select a.fecha, 
+                a.activo, 
+                a.entregaEfectivo, 
+                cli.nombre cliente, 
+                r.nombreRuta ruta, 
+                co.nombres cobrador, 
+                c.nombreUsuario digitador, 
+                d.tipoPrestamo tipo, 
+                e.montoEntregado, 
+                e.montoConInteres, 
+                e.porcentajeInteres, 
+                e.plazoDias, 
+                e.cobroDiario cuota,
+                sum(cp.cobro) pagado, 
+                (sum(cp.cobro)/e.montoConInteres)*100 porcentaje
+            from prestamos a
+            join rutasCobradores b on a.idRutaCobrador = b.id
+            join rutas r on b.idRuta = r.id
+            join cobradores co on b.idCobrador = co.id
+            join usuarios c on a.idUsuario = c.id
+            join tiposPrestamos d on a.idTipoPrestamo = d.id
+            join MontoPrestamos e on a.idMonto = e.id
+            join clientes cli on cli.id = a.idCliente
+            left join CobrosPrestamos cp on a.id = cp.idPrestamo
+            where a.id = :ida
+            group by a.fecha, a.activo, a.entregaEfectivo, r.nombreRuta, co.nombres, 
+            c.nombreUsuario, d.tipoPrestamo, e.montoConInteres, e.porcentajeInteres, e.plazoDias, e.cobroDiario
+        ` 
+
+        let body = `
+            select id, cobro, fecha, lat, lon 
+            from CobrosPrestamos 
+            where idPrestamo = :id
+        ` 
+                    
         try{
-            const resp = await db.query(query, { replacements: { id }, type: QueryTypes.SELECT })
-            return { success: true, response : resp }
+            const head = await db.query(header, { replacements: { id }, type: QueryTypes.SELECT })
+            const content = await db.query(body, { replacements: { id }, type: QueryTypes.SELECT })
+            return { 
+                success: true, 
+                response : {
+                    prestamo: head,
+                    cobros: content
+                }
+            }
         }catch(exception: any) {
-            return { success: false, response: exception}
+            throw exception
         }
     }
 
-    public static async getClientes(id: number): Promise<QueryResponse> {
+    public static async create(body: any): Promise<generalResponse> {
         let query = `
-            select a.fecha as fechaEntrega, c.nombres, c.apellidos, d.montoEntregado, d.plazoDias, d.montoConInteres
-            from prestamos a, rutasCobradores b, clientes c, MontoPrestamos d
-            where a.idRutaCobrador = b.id and a.idCliente = c.id and a.idMonto = d.id and b.idCobrador = :id
+            INSERT INTO prestamos (fecha, idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, activo, entregaEfectivo)
+            VALUES (now(), :idRutaCobrador, :idUsuario, :idCliente, :idTipoPrestamo, :idMonto, 1, :entregaEfectivo)
+        `
+
+        try{
+            const [ idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, entregaEfectivo ] = body
+            const resp = await db.query(query, { 
+                replacements: { idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, entregaEfectivo },
+                type: QueryTypes.INSERT 
+            })
+            const [results, metadata] = resp
+            return { success: true, message: `ID: ${results}, affected rows: ${metadata}`}
+        }
+        catch(exception: any){
+            throw exception
+        }
+    }
+
+    public static async update(body:any, id: number): Promise<generalResponse> {
+        let query = `
+            UPDATE prestamos SET 
+            idRutaCobrador = :idRutaCobrador, 
+            idCliente = :idCliente, 
+            idMonto = :idMonto, 
+            entregaEfectivo = :entregaEfectivo
+            WHERE id = :id
         `
         try{
-            const resp = await db.query(query, { replacements: { id }, type: QueryTypes.SELECT })
-            return { success: true, response : resp }
-        }catch(exception: any) {
-            return { success: false, response: exception}
+            const [ idRutaCobrador, idCliente, idMonto, entregaEfectivo, id ] = body
+            const resp = await db.query(query, { 
+                replacements: { idRutaCobrador, idCliente, idMonto, entregaEfectivo, id },
+                type: QueryTypes.UPDATE 
+            })
+            const [results, metadata] = resp
+            return {success: true, message: `Affected rows: ${metadata}`}
+        }
+        catch(exception){
+            throw exception
         }
     }
 
 }
 
-export default Prestamos
+export default PrestamosService

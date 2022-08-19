@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const connection_1 = __importDefault(require("../db/connection"));
 const sequelize_1 = require("sequelize");
-class Prestamos {
+class CobrosService {
     static isValidCreateRequest(body) {
         if (body.idPrestamo && body.cobro)
             return true;
@@ -40,7 +40,7 @@ class Prestamos {
                 return { success: true, message: `ID: ${results}, affected rows: ${metadata}` };
             }
             catch (exception) {
-                return { success: false, message: exception };
+                throw exception;
             }
         });
     }
@@ -56,18 +56,27 @@ class Prestamos {
                 return { success: true, message: `Affected rows: ${metadata}` };
             }
             catch (exception) {
-                return { success: false, message: exception };
+                throw exception;
             }
         });
     }
     static getAll() {
         return __awaiter(this, void 0, void 0, function* () {
             let query = `
-            select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede 
-            from cobradores a 
-            left join rutasCobradores b on a.id = b.idCobrador 
-            left join rutas c on c.id = b.idRuta 
-            left join sedesGold d on d.id = c.idSede   
+            select 
+                a.idPrestamo,
+                a.id, 
+                a.cobro, 
+                a.lat, 
+                a.lon, 
+                a.fecha,
+                cli.nombre cliente,
+                rut.nombreRuta ruta
+            from CobrosPrestamos a
+            join prestamos b on b.id = a.idPrestamo
+            join clientes cli on cli.id = b.idCliente
+            join rutasCobradores ruc on b.idRutaCobrador = ruc.id
+            join rutas rut on ruc.idRuta = rut.id
         `;
             try {
                 const resp = yield connection_1.default.query(query, { type: sequelize_1.QueryTypes.SELECT });
@@ -78,31 +87,26 @@ class Prestamos {
             }
         });
     }
-    static get(id) {
+    static get(idPrestamo) {
         return __awaiter(this, void 0, void 0, function* () {
             let query = `
-            select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede 
-            from cobradores a, rutasCobradores b, rutas c, sedesGold d 
-            where b.idCobrador = a.id and c.id = b.idRuta and d.id = c.idSede and a.id = :id 
+            select 
+                a.id, 
+                a.cobro, 
+                a.lat, 
+                a.lon, 
+                a.fecha,
+                cli.nombre cliente,
+                rut.nombreRuta ruta
+            from CobrosPrestamos a
+            join prestamos b on b.id = a.idPrestamo
+            join clientes cli on cli.id = b.idCliente
+            join rutasCobradores ruc on b.idRutaCobrador = ruc.id
+            join rutas rut on ruc.idRuta = rut.id
+            where a.idPrestamo = :idPrestamo
         `;
             try {
-                const resp = yield connection_1.default.query(query, { replacements: { id }, type: sequelize_1.QueryTypes.SELECT });
-                return { success: true, response: resp };
-            }
-            catch (exception) {
-                return { success: false, response: exception };
-            }
-        });
-    }
-    static getClientes(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let query = `
-            select a.fecha as fechaEntrega, c.nombres, c.apellidos, d.montoEntregado, d.plazoDias, d.montoConInteres
-            from prestamos a, rutasCobradores b, clientes c, MontoPrestamos d
-            where a.idRutaCobrador = b.id and a.idCliente = c.id and a.idMonto = d.id and b.idCobrador = :id
-        `;
-            try {
-                const resp = yield connection_1.default.query(query, { replacements: { id }, type: sequelize_1.QueryTypes.SELECT });
+                const resp = yield connection_1.default.query(query, { replacements: { idPrestamo }, type: sequelize_1.QueryTypes.SELECT });
                 return { success: true, response: resp };
             }
             catch (exception) {
@@ -111,5 +115,5 @@ class Prestamos {
         });
     }
 }
-exports.default = Prestamos;
+exports.default = CobrosService;
 //# sourceMappingURL=cobrosService.js.map

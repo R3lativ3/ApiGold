@@ -14,96 +14,149 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const connection_1 = __importDefault(require("../db/connection"));
 const sequelize_1 = require("sequelize");
-class Prestamos {
+class PrestamosService {
     static isValidCreateRequest(body) {
         const [idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto] = body;
         if (idRutaCobrador && idUsuario && idCliente && idTipoPrestamo && idMonto)
             return true;
         return false;
     }
+    static getAll() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let query = `
+            select a.fecha, 
+                a.activo, 
+                a.entregaEfectivo, 
+                cli.nombre cliente, 
+                r.nombreRuta ruta, 
+                co.nombres cobrador, 
+                c.nombreUsuario digitador, 
+                d.tipoPrestamo tipo, 
+                e.montoEntregado, 
+                e.montoConInteres, 
+                e.porcentajeInteres, 
+                e.plazoDias, 
+                e.cobroDiario cuota,
+                sum(cp.cobro) pagado, 
+                (sum(cp.cobro)/e.montoConInteres)*100 porcentaje
+            from prestamos a
+            join rutasCobradores b on a.idRutaCobrador = b.id
+            join rutas r on b.idRuta = r.id
+            join cobradores co on b.idCobrador = co.id
+            join usuarios c on a.idUsuario = c.id
+            join tiposPrestamos d on a.idTipoPrestamo = d.id
+            join MontoPrestamos e on a.idMonto = e.id
+            join clientes cli on cli.id = a.idCliente
+            left join CobrosPrestamos cp on a.id = cp.idPrestamo
+            where activo = 1 
+            group by a.fecha, a.activo, a.entregaEfectivo, r.nombreRuta, co.nombres, 
+            c.nombreUsuario, d.tipoPrestamo, e.montoConInteres, e.porcentajeInteres, e.plazoDias, e.cobroDiario
+        `;
+            try {
+                const resp = yield connection_1.default.query(query, { type: sequelize_1.QueryTypes.SELECT });
+                return { success: true, response: resp };
+            }
+            catch (exception) {
+                throw exception;
+            }
+        });
+    }
+    static get(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let header = `
+            select a.fecha, 
+                a.activo, 
+                a.entregaEfectivo, 
+                cli.nombre cliente, 
+                r.nombreRuta ruta, 
+                co.nombres cobrador, 
+                c.nombreUsuario digitador, 
+                d.tipoPrestamo tipo, 
+                e.montoEntregado, 
+                e.montoConInteres, 
+                e.porcentajeInteres, 
+                e.plazoDias, 
+                e.cobroDiario cuota,
+                sum(cp.cobro) pagado, 
+                (sum(cp.cobro)/e.montoConInteres)*100 porcentaje
+            from prestamos a
+            join rutasCobradores b on a.idRutaCobrador = b.id
+            join rutas r on b.idRuta = r.id
+            join cobradores co on b.idCobrador = co.id
+            join usuarios c on a.idUsuario = c.id
+            join tiposPrestamos d on a.idTipoPrestamo = d.id
+            join MontoPrestamos e on a.idMonto = e.id
+            join clientes cli on cli.id = a.idCliente
+            left join CobrosPrestamos cp on a.id = cp.idPrestamo
+            where a.id = :ida
+            group by a.fecha, a.activo, a.entregaEfectivo, r.nombreRuta, co.nombres, 
+            c.nombreUsuario, d.tipoPrestamo, e.montoConInteres, e.porcentajeInteres, e.plazoDias, e.cobroDiario
+        `;
+            let body = `
+            select id, cobro, fecha, lat, lon 
+            from CobrosPrestamos 
+            where idPrestamo = :id
+        `;
+            try {
+                const head = yield connection_1.default.query(header, { replacements: { id }, type: sequelize_1.QueryTypes.SELECT });
+                const content = yield connection_1.default.query(body, { replacements: { id }, type: sequelize_1.QueryTypes.SELECT });
+                return {
+                    success: true,
+                    response: {
+                        prestamo: head,
+                        cobros: content
+                    }
+                };
+            }
+            catch (exception) {
+                throw exception;
+            }
+        });
+    }
     static create(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            let query = `INSERT INTO prestamos (fecha, idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto)
-                    VALUES (now(), :idRutaCobrador, :idUsuario, :idCliente, :idTipoPrestamo, :idMonto)`;
+            let query = `
+            INSERT INTO prestamos (fecha, idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, activo, entregaEfectivo)
+            VALUES (now(), :idRutaCobrador, :idUsuario, :idCliente, :idTipoPrestamo, :idMonto, 1, :entregaEfectivo)
+        `;
             try {
-                const [idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto] = body;
+                const [idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, entregaEfectivo] = body;
                 const resp = yield connection_1.default.query(query, {
-                    replacements: { idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto },
+                    replacements: { idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, entregaEfectivo },
                     type: sequelize_1.QueryTypes.INSERT
                 });
                 const [results, metadata] = resp;
                 return { success: true, message: `ID: ${results}, affected rows: ${metadata}` };
             }
             catch (exception) {
-                return { success: false, message: exception };
+                throw exception;
             }
         });
     }
     static update(body, id) {
         return __awaiter(this, void 0, void 0, function* () {
-            let query = `UPDATE prestamos set idMonto = :idMonto where id = :id`;
+            let query = `
+            UPDATE prestamos SET 
+            idRutaCobrador = :idRutaCobrador, 
+            idCliente = :idCliente, 
+            idMonto = :idMonto, 
+            entregaEfectivo = :entregaEfectivo
+            WHERE id = :id
+        `;
             try {
+                const [idRutaCobrador, idCliente, idMonto, entregaEfectivo, id] = body;
                 const resp = yield connection_1.default.query(query, {
-                    replacements: { cobro: body.idMonto, id },
+                    replacements: { idRutaCobrador, idCliente, idMonto, entregaEfectivo, id },
                     type: sequelize_1.QueryTypes.UPDATE
                 });
                 const [results, metadata] = resp;
                 return { success: true, message: `Affected rows: ${metadata}` };
             }
             catch (exception) {
-                return { success: false, message: exception };
-            }
-        });
-    }
-    static getAll() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let query = 'select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
-                + 'from cobradores a '
-                + 'left join rutasCobradores b '
-                + '   on a.id = b.idCobrador '
-                + 'left join rutas c '
-                + '   on c.id = b.idRuta '
-                + 'left join sedesGold d '
-                + '   on d.id = c.idSede ';
-            try {
-                const resp = yield connection_1.default.query(query, { type: sequelize_1.QueryTypes.SELECT });
-                return { success: true, response: resp };
-            }
-            catch (exception) {
-                return { success: false, response: exception };
-            }
-        });
-    }
-    static get(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let query = 'select a.nombres, a.apellidos, a.dpi, a.telefono, c.nombreRuta, d.sede '
-                + 'from cobradores a, rutasCobradores b, rutas c, sedesGold d '
-                + 'where b.idCobrador = a.id and c.id = b.idRuta and d.id = c.idSede and a.id = :id ';
-            try {
-                const resp = yield connection_1.default.query(query, { replacements: { id }, type: sequelize_1.QueryTypes.SELECT });
-                return { success: true, response: resp };
-            }
-            catch (exception) {
-                return { success: false, response: exception };
-            }
-        });
-    }
-    static getClientes(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let query = `
-            select a.fecha as fechaEntrega, c.nombres, c.apellidos, d.montoEntregado, d.plazoDias, d.montoConInteres
-            from prestamos a, rutasCobradores b, clientes c, MontoPrestamos d
-            where a.idRutaCobrador = b.id and a.idCliente = c.id and a.idMonto = d.id and b.idCobrador = :id
-        `;
-            try {
-                const resp = yield connection_1.default.query(query, { replacements: { id }, type: sequelize_1.QueryTypes.SELECT });
-                return { success: true, response: resp };
-            }
-            catch (exception) {
-                return { success: false, response: exception };
+                throw exception;
             }
         });
     }
 }
-exports.default = Prestamos;
+exports.default = PrestamosService;
 //# sourceMappingURL=prestamosService.js.map
