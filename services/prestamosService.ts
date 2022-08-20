@@ -35,7 +35,7 @@ class PrestamosService {
             join tiposPrestamos d on a.idTipoPrestamo = d.id
             join MontoPrestamos e on a.idMonto = e.id
             join clientes cli on cli.id = a.idCliente
-            left join CobrosPrestamos cp on a.id = cp.idPrestamo
+            left join CobrosPrestamos cp on a.id = cp.idPrestamo and cp.eliminado = false
             where activo = 1 
             group by a.fecha, a.activo, a.entregaEfectivo, r.nombreRuta, co.nombres, 
             c.nombreUsuario, d.tipoPrestamo, e.montoConInteres, e.porcentajeInteres, e.plazoDias, e.cobroDiario
@@ -132,9 +132,29 @@ class PrestamosService {
             WHERE id = :id
         `
         try{
-            const [ idRutaCobrador, idCliente, idMonto, entregaEfectivo, id ] = body
+            const [ idRutaCobrador, idCliente, idMonto, entregaEfectivo ] = body
             const resp = await db.query(query, { 
                 replacements: { idRutaCobrador, idCliente, idMonto, entregaEfectivo, id },
+                type: QueryTypes.UPDATE 
+            })
+            const [results, metadata] = resp
+            return {success: true, message: `Affected rows: ${metadata}`}
+        }
+        catch(exception){
+            throw exception
+        }
+    }
+
+
+    public static async delete(id: number): Promise<generalResponse> {
+        let query = `
+            UPDATE prestamos 
+            SET eliminado = true
+            WHERE id = :id
+        `
+        try{
+            const resp = await db.query(query, { 
+                replacements: { id },
                 type: QueryTypes.UPDATE 
             })
             const [results, metadata] = resp

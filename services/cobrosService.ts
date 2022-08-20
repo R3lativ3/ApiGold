@@ -1,6 +1,7 @@
 import { propertyModel, generalResponse, updateModel, QueryResponse } from '../models/general.models';
 import db from "../db/connection"
 import { QueryTypes } from 'sequelize'
+import { cobro, cobroPost, cobroUpdate } from '../models/cobro';
 
 class CobrosService {
 
@@ -9,18 +10,18 @@ class CobrosService {
         return false
     }
 
-    public static async create(body: any): Promise<generalResponse> {
+    public static async create(cobro: cobroPost): Promise<generalResponse> {
         let query = `
             INSERT INTO CobrosPrestamos (cobro, idPrestamo, lat, lon, fecha)
-            VALUES (:cobro, :idPrestamo, :lat, :lon, getdate())
+            VALUES (:cobro, :idPrestamo, :lat, :lon, now())
         `
         try{
             const resp = await db.query(query, { 
                 replacements: { 
-                    cobro: body.cobro,
-                    idPrestamo: body.idPrestamo,
-                    lat: body.lat,
-                    lon: body.lon
+                    cobro: cobro.cobro,
+                    idPrestamo: cobro.idPrestamo,
+                    lat: cobro.lat,
+                    lon: cobro.lon
                 },
                 type: QueryTypes.INSERT 
             })
@@ -33,11 +34,11 @@ class CobrosService {
         }
     }
 
-    public static async update(body:any, id: number): Promise<generalResponse> {
+    public static async update(cobro: cobroUpdate, id: number): Promise<generalResponse> {
         let query = `UPDATE CobrosPrestamos set cobro = :cobro where id = :id`
         try{
             const resp = await db.query(query, { 
-                replacements: {cobro: body.cobro, id},
+                replacements: {cobro: cobro.cobro, id},
                 type: QueryTypes.UPDATE 
             })
             const [results, metadata] = resp
@@ -48,7 +49,7 @@ class CobrosService {
         }
     }
 
-    public static async getAll(): Promise<QueryResponse>{
+    public static async getAll(): Promise<cobro[]>{
         let query =  `
             select 
                 a.idPrestamo,
@@ -66,17 +67,18 @@ class CobrosService {
             join rutas rut on ruc.idRuta = rut.id
         `
         try{
-            const resp = await db.query(query, { type: QueryTypes.SELECT })
-            return { success: true, response : resp }
+            const resp = await db.query<cobro>(query, { type: QueryTypes.SELECT })
+            return resp
         }
         catch(exception){
-            return { success: false, response: exception}
+            throw exception
         }
     }
 
-    public static async get(idPrestamo: number): Promise<QueryResponse> {
+    public static async get(idPrestamo: number): Promise<cobro> {
         let query = `
-            select 
+            select
+                a.idPrestamo,
                 a.id, 
                 a.cobro, 
                 a.lat, 
@@ -92,10 +94,10 @@ class CobrosService {
             where a.idPrestamo = :idPrestamo
         `
         try{
-            const resp = await db.query(query, { replacements: { idPrestamo }, type: QueryTypes.SELECT })
-            return { success: true, response : resp }
-        }catch(exception: any) {
-            return { success: false, response: exception}
+            const resp = await db.query<cobro>(query, { replacements: { idPrestamo }, type: QueryTypes.SELECT })
+            return resp[0];
+        }catch(exception) {
+            throw exception;
         }
     }
 
