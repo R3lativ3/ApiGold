@@ -15,13 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const connection_1 = __importDefault(require("../db/connection"));
-const prestamosRoutes_1 = __importDefault(require("../routes/prestamosRoutes"));
-const clientesRoutes_1 = __importDefault(require("../routes/clientesRoutes"));
-const cobradoresRoutes_1 = __importDefault(require("../routes/cobradoresRoutes"));
-const cobrosRoutes_1 = __importDefault(require("../routes/cobrosRoutes"));
-const creditosRoutes_1 = __importDefault(require("../routes/creditosRoutes"));
-const rutasRoutes_1 = __importDefault(require("../routes/rutasRoutes"));
-const usuariosRoutes_1 = __importDefault(require("../routes/usuariosRoutes"));
+const prestamosRoutes_1 = __importDefault(require("../src/routes/prestamosRoutes"));
+const clientesRoutes_1 = __importDefault(require("../src/routes/clientesRoutes"));
+const cobradoresRoutes_1 = __importDefault(require("../src/routes/cobradoresRoutes"));
+const cobrosRoutes_1 = __importDefault(require("../src/routes/cobrosRoutes"));
+const creditosRoutes_1 = __importDefault(require("../src/routes/creditosRoutes"));
+const rutasRoutes_1 = __importDefault(require("../src/routes/rutasRoutes"));
+const usuariosRoutes_1 = __importDefault(require("../src/routes/usuariosRoutes"));
+const sedesRoutes_1 = __importDefault(require("../src/routes/sedesRoutes"));
 class Server {
     constructor() {
         this.apiPaths = {
@@ -31,7 +32,8 @@ class Server {
             cobros: '/api/cobros',
             creditos: '/api/creditos',
             rutas: '/api/rutas',
-            usuarios: '/api/usuarios'
+            usuarios: '/api/usuarios',
+            sedes: '/api/sedes'
         };
         this.app = (0, express_1.default)();
         this.port = '443' || '80';
@@ -62,8 +64,12 @@ class Server {
         this.app.use(this.apiPaths.creditos, creditosRoutes_1.default);
         this.app.use(this.apiPaths.rutas, rutasRoutes_1.default);
         this.app.use(this.apiPaths.usuarios, usuariosRoutes_1.default);
+        this.app.use(this.apiPaths.sedes, sedesRoutes_1.default);
     }
     listen() {
+        const swaggerUi = require('swagger-ui-express');
+        let swaggerDocument = require('../../swagger.json');
+        this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
         this.app.listen(this.port, () => {
             console.log('server running on port: ' + this.port);
         });
