@@ -1,0 +1,21 @@
+GET {{hostname}}/api/rutas
+
+### CREAR RUTA
+POST {{hostname}}/api/rutas
+content-type: application/json
+
+{
+    "nombreRuta": "",
+    "idSede": 0,
+    "idMunicipio": 0 
+}
+
+### CREAR RUTA
+PUT {{hostname}}/api/rutas/1
+content-type: application/json
+
+{
+    "nombreRuta": "",
+    "idSede": ,
+    "idMunicipio": ,
+}
