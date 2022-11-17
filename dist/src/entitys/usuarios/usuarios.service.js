@@ -12,8 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const types_1 = require("sequelize/types");
 const connection_1 = __importDefault(require("../../db/connection"));
+const sequelize_1 = require("sequelize");
 class UsuariosService {
     create(body) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -29,7 +29,7 @@ class UsuariosService {
                     salt: body.salt,
                     idTipoUsuario: body.idTipoUsuario
                 };
-                const resp = yield connection_1.default.query(query, { replacements, type: types_1.QueryTypes.INSERT });
+                const resp = yield connection_1.default.query(query, { replacements, type: sequelize_1.QueryTypes.INSERT });
                 const [results, metadata] = resp;
                 return { success: true, message: `Usuario creado: ${results}, filas afectadas: ${metadata}` };
             }
@@ -58,7 +58,7 @@ class UsuariosService {
                     idTipoUsuario: body.idTipoUsuario,
                     id
                 };
-                const resp = yield connection_1.default.query(query, { replacements, type: types_1.QueryTypes.UPDATE });
+                const resp = yield connection_1.default.query(query, { replacements, type: sequelize_1.QueryTypes.UPDATE });
                 const [results, metadata] = resp;
                 return { success: true, message: `Usuario actualizado: ${metadata}, filas afectadas: ${results}` };
             }
@@ -80,7 +80,7 @@ class UsuariosService {
                 on b.id = a.IdTipoUsuario
         `;
             try {
-                const resp = yield connection_1.default.query(query, { type: types_1.QueryTypes.SELECT });
+                const resp = yield connection_1.default.query(query, { type: sequelize_1.QueryTypes.SELECT });
                 return resp;
             }
             catch (exception) {
@@ -104,7 +104,7 @@ class UsuariosService {
             try {
                 const resp = yield connection_1.default.query(query, {
                     replacements: { id },
-                    type: types_1.QueryTypes.SELECT,
+                    type: sequelize_1.QueryTypes.SELECT,
                     raw: true
                 });
                 return resp;

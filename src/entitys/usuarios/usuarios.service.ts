@@ -1,7 +1,7 @@
-import { QueryTypes } from "sequelize/types"
 import { Response } from '../../app/general';
 import { CreateUsuario, Usuario } from "./usuarios"
 import db from "../../db/connection"
+import { QueryTypes } from 'sequelize';
 
 export default class UsuariosService{
 

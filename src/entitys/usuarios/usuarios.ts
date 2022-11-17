@@ -15,8 +15,8 @@ export interface UsuarioInternal{
 }
 
 export interface CreateUsuario{
-    nombre: string
-    email: string
+    nombre: string          // listo
+    email: string           // listo
     psw: string
     salt: string
     idTipoUsuario: number

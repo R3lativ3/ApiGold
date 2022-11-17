@@ -1,0 +1,15 @@
+GET {{hostname}}/api/sedes
+
+### CREAR RUTA
+POST {{hostname}}/api/sedes
+content-type: application/json
+
+{
+}
+
+### CREAR RUTA
+PUT {{hostname}}/api/sedes/1
+content-type: application/json
+
+{
+}

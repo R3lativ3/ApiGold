@@ -7,16 +7,16 @@ exports.ValidateCreateUsuario = void 0;
 const express_validator_1 = require("express-validator");
 const validateHelper_1 = __importDefault(require("../../helpers/validateHelper"));
 exports.ValidateCreateUsuario = [
-    (0, express_validator_1.check)('nombreRuta')
+    (0, express_validator_1.check)('nombre')
         .exists().withMessage('debes agregar nombreRuta')
         .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
         .isLength({ min: 2 }),
-    (0, express_validator_1.check)('idSede')
-        .exists().withMessage('debes agregar idSede')
-        .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
-        .isNumeric().withMessage('EL valor debe ser numerico entero'),
-    (0, express_validator_1.check)('idMunicipio')
-        .exists().withMessage('Debes agregar idMunicipio')
+    (0, express_validator_1.check)('email')
+        .exists().withMessage('debes agregar email')
+        .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
+        .isEmail().withMessage('Tiene que ser email'),
+    (0, express_validator_1.check)('idTipoUsuario')
+        .exists().withMessage('Debes agregar idTipoUsuario')
         .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
         .isNumeric().withMessage('El valor debe ser numerico entero'),
     (req, res, next) => {

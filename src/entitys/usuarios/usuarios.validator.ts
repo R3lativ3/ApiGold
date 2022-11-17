@@ -3,18 +3,18 @@ import  validateResult  from '../../helpers/validateHelper'
 
 
 export const ValidateCreateUsuario = [
-    check('nombreRuta')
+    check('nombre')
     .exists().withMessage('debes agregar nombreRuta')
     .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
     .isLength({min: 2}),
-    
-    check('idSede')
-    .exists().withMessage('debes agregar idSede')
-    .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
-    .isNumeric().withMessage('EL valor debe ser numerico entero'),
 
-    check('idMunicipio')
-    .exists().withMessage('Debes agregar idMunicipio')
+    check('email')
+    .exists().withMessage('debes agregar email')
+    .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
+    .isEmail().withMessage('Tiene que ser email'),
+    
+    check('idTipoUsuario')
+    .exists().withMessage('Debes agregar idTipoUsuario')
     .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
     .isNumeric().withMessage('El valor debe ser numerico entero'),
 

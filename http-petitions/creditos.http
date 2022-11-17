@@ -1,0 +1,15 @@
+GET {{hostname}}/api/creditos
+
+### CREAR RUTA
+POST {{hostname}}/api/creditos
+content-type: application/json
+
+{
+}
+
+### CREAR RUTA
+PUT {{hostname}}/api/creditos/1
+content-type: application/json
+
+{
+}
