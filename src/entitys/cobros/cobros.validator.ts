@@ -3,20 +3,25 @@ import  validateResult  from '../../helpers/validateHelper'
 
 
 export const ValidateCreate = [
-    check('nombreRuta')
+    check('cobro')
     .exists().withMessage('debes agregar nombreRuta')
     .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
-    .isLength({min: 2}),
+    .isNumeric().withMessage("El valor debe ser numerico"),
     
-    check('idSede')
-    .exists().withMessage('debes agregar idSede')
+    check('idPrestamo')
+    .exists().withMessage('debes agregar idPrestamo')
     .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
     .isNumeric().withMessage('EL valor debe ser numerico entero'),
 
-    check('idMunicipio')
-    .exists().withMessage('Debes agregar idMunicipio')
-    .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
-    .isNumeric().withMessage('El valor debe ser numerico entero'),
+    check('lat')
+    .exists().withMessage('debes agregar latitud')
+    .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
+    .isNumeric().withMessage("El valor debe ser numerico"),
+
+    check('lon')
+    .exists().withMessage('debes agregar longitud')
+    .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
+    .isNumeric().withMessage("El valor debe ser numerico"),
 
     (req: any, res: any, next: any) => {
         validateResult(req, res, next)
