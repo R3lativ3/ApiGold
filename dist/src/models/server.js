@@ -12,17 +12,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require("reflect-metadata");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const connection_1 = __importDefault(require("../db/connection"));
-const prestamosRoutes_1 = __importDefault(require("../routes/prestamosRoutes"));
-const clientesRoutes_1 = __importDefault(require("../routes/clientesRoutes"));
-const cobradoresRoutes_1 = __importDefault(require("../routes/cobradoresRoutes"));
-const cobrosRoutes_1 = __importDefault(require("../routes/cobrosRoutes"));
-const creditosRoutes_1 = __importDefault(require("../routes/creditosRoutes"));
-const rutasRoutes_1 = __importDefault(require("../routes/rutasRoutes"));
-const usuariosRoutes_1 = __importDefault(require("../routes/usuariosRoutes"));
-const sedesRoutes_1 = __importDefault(require("../routes/sedesRoutes"));
+const prestamos_route_1 = __importDefault(require("../routes/prestamos.route"));
+const clientes_route_1 = __importDefault(require("../routes/clientes.route"));
+const cobradores_route_1 = __importDefault(require("../routes/cobradores.route"));
+const cobros_route_1 = __importDefault(require("../routes/cobros.route"));
+const creditos_route_1 = __importDefault(require("../routes/creditos.route"));
+const usuarios_route_1 = __importDefault(require("../routes/usuarios.route"));
+const sedes_route_1 = __importDefault(require("../routes/sedes.route"));
+const rutas_controller_1 = __importDefault(require("../controllers/rutas.controller"));
+const tsyringe_1 = require("tsyringe");
 class Server {
     constructor() {
         this.apiPaths = {
@@ -36,7 +38,8 @@ class Server {
             sedes: '/api/sedes'
         };
         this.app = (0, express_1.default)();
-        this.port = '443' || '80';
+        console.log(process.env.PORT);
+        this.port = process.env.PORT || '80';
         this.databaseConnection();
         this.middlewares();
         this.routes();
@@ -57,14 +60,15 @@ class Server {
         });
     }
     routes() {
-        this.app.use(this.apiPaths.prestamos, prestamosRoutes_1.default);
-        this.app.use(this.apiPaths.clientes, clientesRoutes_1.default);
-        this.app.use(this.apiPaths.cobradores, cobradoresRoutes_1.default);
-        this.app.use(this.apiPaths.cobros, cobrosRoutes_1.default);
-        this.app.use(this.apiPaths.creditos, creditosRoutes_1.default);
-        this.app.use(this.apiPaths.rutas, rutasRoutes_1.default);
-        this.app.use(this.apiPaths.usuarios, usuariosRoutes_1.default);
-        this.app.use(this.apiPaths.sedes, sedesRoutes_1.default);
+        const rutasController = tsyringe_1.container.resolve(rutas_controller_1.default);
+        this.app.use(this.apiPaths.prestamos, prestamos_route_1.default);
+        this.app.use(this.apiPaths.clientes, clientes_route_1.default);
+        this.app.use(this.apiPaths.cobradores, cobradores_route_1.default);
+        this.app.use(this.apiPaths.cobros, cobros_route_1.default);
+        this.app.use(this.apiPaths.creditos, creditos_route_1.default);
+        this.app.use(this.apiPaths.rutas, rutasController.routes());
+        this.app.use(this.apiPaths.usuarios, usuarios_route_1.default);
+        this.app.use(this.apiPaths.sedes, sedes_route_1.default);
     }
     listen() {
         this.app.listen(this.port, () => {

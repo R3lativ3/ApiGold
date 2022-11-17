@@ -1,0 +1,24 @@
+###     OBTENER TODOS LOS COBRADORES
+GET {{hostname}}/api/cobradores
+
+###     OBTENER CLIENTES POR COBRADOR
+GET {{hostname}}/api/cobradores/1/clientes
+
+###     CREAR REGISTRO COBRADOR
+POST {{hostname}}/api/cobradores
+content-type: application/json
+
+{
+    "nombres": ""
+}
+
+###     ACTUALIZAR REGISTRO COBRADOR
+PUT  {{hostname}}/api/cobradores/1
+content-type: application/json
+
+{
+    "nombres": "perrote",
+    "apellidos": "bedoya",
+    "dpi": "3201526770501",
+    "telefono": "78893212"
+}
