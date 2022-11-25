@@ -1,30 +1,34 @@
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import crypto from 'crypto'
+import { Loged, Login } from './autenticacion.models'
+import { container } from 'tsyringe'
+import UsuariosService from '../usuarios/usuarios.service'
+import TokenService from './token.service'
+export default class AuthenticacionService{
 
-export default class Authentication{
+    async login(credentials: Login): Promise<Loged | null>{
+        try{
+            const usuarioService = container.resolve(UsuariosService)
+            const user = await usuarioService.getUserByEmail(credentials.username)
+            if(!user)
+                return null
+            
+            const tokenService = container.resolve(TokenService)
+            const encrypted = tokenService.encrypt(credentials.psw, user.salt)
 
-    public signToken( id: string ){
-        return jwt.sign({ id }, 'lel', {
-            expiresIn: 60 * 60 * 24 * 365
-        })
-    }
+            if(encrypted !== user.psw)
+                return null
 
-    public encrypt(salt: string, psw: string){
-        const key = crypto.pbkdf2Sync(psw, salt, 1000, 64, 'sha1')
-        return key.toString('base64')
-    }
-
-    public signPsw(psw: string): {salt: string, key: string}{
-        const salt = crypto.randomBytes(16).toString('base64')
-        const encrypted = this.encrypt(salt, psw)
-        console.log(encrypted)
-        return {salt, key : encrypted}
+            let token = await tokenService.getToken(user.id, user.nombre, user.tipoUsuario)
+            let response: Loged = { username: user.email, nombre: user.nombre, token }
+            return response
+        }
+        catch(excepction){
+            throw excepction
+        }
     }
 
     constructor(){
-        const psw = this.signPsw('perromon')
-        console.log('salt y encriptacion: ', psw)
-        console.log('encryptado segun el salt generado anteriormente: ', this.encrypt(psw.salt, 'perromon'))
     }
 
 }

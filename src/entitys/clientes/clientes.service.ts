@@ -1,6 +1,6 @@
 import db from "../../db/connection"
 import { QueryTypes } from 'sequelize'
-import { Cliente, CreateCliente, PrestamoCliente } from "./cliente"
+import { Cliente, CreateCliente, PrestamoCliente } from "./cliente.models"
 import { Response } from "../../app/general"
 import { Express, response } from "express"
 import Resize from "../../helpers/Resize"

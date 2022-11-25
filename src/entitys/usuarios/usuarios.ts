@@ -5,6 +5,15 @@ export interface Usuario{
     tipoUsuario: string
 }
 
+export interface UsuarioLogin{
+    id: number
+    nombre: string
+    email: string
+    tipoUsuario: string
+    salt: string
+    psw: string
+}
+
 export interface UsuarioInternal{
     id: number
     nombre: string

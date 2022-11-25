@@ -1,5 +1,5 @@
 import { Response } from '../../app/general';
-import { CreateUsuario, Usuario } from "./usuarios"
+import { CreateUsuario, Usuario, UsuarioLogin } from "./usuarios"
 import db from "../../db/connection"
 import { QueryTypes } from 'sequelize';
 
@@ -92,7 +92,33 @@ export default class UsuariosService{
             const resp = await db.query<Usuario>(query, {
                 replacements: { id }, 
                 type: QueryTypes.SELECT, 
-                raw: true 
+                plain: true 
+            })
+            return resp
+        }
+        catch(exception){
+            throw exception
+        }
+    }
+
+    public async getUserByEmail(email: string){
+        let query = `
+            SELECT  
+                a.id,
+                a.nombreUsuario,
+                a.emailUsuario,
+                b.tipoUsuario,
+                a.salt
+            FROM usuarios a
+            join tiposUsuarios b
+                on b.id = a.IdTipoUsuario
+            where a.emailUsuario = :email and a.psw: :psw
+        `
+        try{
+            const resp = await db.query<UsuarioLogin>(query, {
+                replacements: { email }, 
+                type: QueryTypes.SELECT, 
+                plain: true 
             })
             return resp
         }

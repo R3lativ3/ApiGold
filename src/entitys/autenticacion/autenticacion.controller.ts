@@ -1,27 +1,34 @@
-import { Request, Response } from "express"
-import { QueryTypes } from 'sequelize'
-import db from "../../db/connection"
+import { Request, Response, Router } from "express"
+import AuthenticacionService from "./authentication.service"
+import { container } from "tsyringe"
+import { ValidateLogin } from "./autenticacion.validator"
 
+export default class AutenticacionController{
+    apiPath = '/api/login'
 
-export const get = async (req: Request, res: Response) => {
-    const { id } = req.params
-    let query = 'select * from  where id = :id'
-    const resp = await db.query(query, 
-        { 
-            replacements: { id },
-            type: QueryTypes.SELECT 
-        })
-    res.json({
-        response: resp
-    })
-}
+    router: Router
 
+    constructor(){
+        this.router = Router()
+    }
 
-export const create = (req: Request, res: Response) => {
-    const { body } = req
-    console.log(body)
-    res.json({
-        msg: 'post',
-        body
-    })
+    routes(){
+        this.router.get(`${this.apiPath}`, ValidateLogin, this.login)
+        return this.router
+    }
+
+    async login(req: Request, res: Response){
+        try{
+            const { body } = req
+            const autenticacionService = container.resolve(AuthenticacionService)
+            const resp = await autenticacionService.login(body)
+            if(resp === null){
+                return res.status(200).json({error: "Usuario o contraseña invalidos"})
+            }
+            return res.status(200).json(resp)
+        }
+        catch(exception){
+            return res.status(500).send(exception)
+        }
+    }
 }

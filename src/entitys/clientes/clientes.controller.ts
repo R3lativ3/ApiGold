@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express"
 import { container } from "tsyringe"
 import ClientesService from "./clientes.service"
+import { ValidateCreateCliente, ValidateUpdateCliente } from "./clientes.validator"
 
 
 export default class ClientesController{
@@ -14,8 +15,8 @@ export default class ClientesController{
     routes(){
         this.router.get(`${this.apiPath}`, this.getAll)
         this.router.get(`${this.apiPath}/:id`, this.get)
-        this.router.post(`${this.apiPath}`, this.create)
-        this.router.put(`${this.apiPath}/:id`, this.update)
+        this.router.post(`${this.apiPath}`, ValidateCreateCliente, this.create)
+        this.router.put(`${this.apiPath}/:id`, ValidateUpdateCliente, this.update)
 
         return this.router
     }

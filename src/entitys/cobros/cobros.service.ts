@@ -1,7 +1,7 @@
 import { Response } from '../../app/general';
 import db from "../../db/connection"
 import { QueryTypes } from 'sequelize'
-import { Cobro, CobroPost, CobroUpdate } from './cobro';
+import { Cobro, CobroPost, CobroUpdate } from './cobro.models';
 
 class CobrosService {
     public static async create(cobro: CobroPost): Promise<Response> {

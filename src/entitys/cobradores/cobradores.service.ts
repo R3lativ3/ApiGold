@@ -1,7 +1,7 @@
 import { propertyModel, Response, updateModel, QueryResponse } from '../../app/general';
 import db from "../../db/connection"
 import { QueryTypes } from 'sequelize'
-import { Cobrador, CreateCobrador } from './cobrador';
+import { Cobrador, CreateCobrador } from './cobrador.models';
 import { PrestamoPorCobrador } from '../prestamos/prestamos';
 
 export default class CobradoresService {

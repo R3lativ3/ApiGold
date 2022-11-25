@@ -2,7 +2,7 @@ import { Response } from '../../app/general';
 import db from "../../db/connection"
 import { QueryTypes } from 'sequelize'
 import { PrestamoCreate, PrestamoDetail, Prestamo, PrestamoUpdate } from './prestamos';
-import { CobroDetalle } from '../cobros/cobro';
+import { CobroDetalle } from '../cobros/cobro.models';
 
 export default class PrestamosService {
 

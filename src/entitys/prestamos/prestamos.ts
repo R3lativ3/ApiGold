@@ -1,4 +1,4 @@
-import { CobroDetalle } from "../cobros/cobro"
+import { CobroDetalle } from "../cobros/cobro.models"
 
 export interface Prestamo{
     id: number,

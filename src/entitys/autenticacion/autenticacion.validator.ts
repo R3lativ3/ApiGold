@@ -2,21 +2,16 @@ import { check } from 'express-validator'
 import { Request, Response, NextFunction } from "express"
 import  validateResult  from '../../helpers/validateHelper'
 
-export const ValidateCreate = [
-    check('nombreRuta')
-    .exists().withMessage('debes agregar nombreRuta')
+export const ValidateLogin = [
+    check('username')
+    .exists().withMessage('Ingresar username')
     .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
-    .isLength({min: 2}),
-    
-    check('idSede')
-    .exists().withMessage('debes agregar idSede')
-    .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
-    .isNumeric().withMessage('EL valor debe ser numerico entero'),
+    .isLength({min: 6}),
 
-    check('idMunicipio')
-    .exists().withMessage('Debes agregar idMunicipio')
-    .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
-    .isNumeric().withMessage('El valor debe ser numerico entero'),
+    check('psw')
+    .exists().withMessage('Ingresar contraseña')
+    .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
+    .isLength({min: 6}),
 
     (req: Request, res: Response, next: NextFunction) => {
         validateResult(req, res, next)

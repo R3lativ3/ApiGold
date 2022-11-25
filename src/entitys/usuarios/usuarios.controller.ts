@@ -44,7 +44,6 @@ export default class UsuariosController{
         }
     }
 
-
     async create(req: Request, res: Response){
         try{
             const { body } = req
