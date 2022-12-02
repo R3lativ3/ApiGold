@@ -12,28 +12,35 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.create = exports.get = void 0;
-const sequelize_1 = require("sequelize");
-const connection_1 = __importDefault(require("../../db/connection"));
-const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    let query = 'select * from  where id = :id';
-    const resp = yield connection_1.default.query(query, {
-        replacements: { id },
-        type: sequelize_1.QueryTypes.SELECT
-    });
-    res.json({
-        response: resp
-    });
-});
-exports.get = get;
-const create = (req, res) => {
-    const { body } = req;
-    console.log(body);
-    res.json({
-        msg: 'post',
-        body
-    });
-};
-exports.create = create;
+const express_1 = require("express");
+const authentication_service_1 = __importDefault(require("./authentication.service"));
+const tsyringe_1 = require("tsyringe");
+const autenticacion_validator_1 = require("./autenticacion.validator");
+class AutenticacionController {
+    constructor() {
+        this.apiPath = '/api/login';
+        this.router = (0, express_1.Router)();
+    }
+    routes() {
+        this.router.get(`${this.apiPath}`, autenticacion_validator_1.ValidateLogin, this.login);
+        return this.router;
+    }
+    login(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { body } = req;
+                const autenticacionService = tsyringe_1.container.resolve(authentication_service_1.default);
+                const resp = yield autenticacionService.login(body);
+                if (resp === null) {
+                    return res.status(200).json({ error: "Usuario o contraseña invalidos" });
+                }
+                return res.status(200).json(resp);
+            }
+            catch (exception) {
+                return res.status(500).send(exception);
+            }
+        });
+    }
+}
+exports.default = AutenticacionController;
 //# sourceMappingURL=autenticacion.controller.js.map

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const tsyringe_1 = require("tsyringe");
 const clientes_service_1 = __importDefault(require("./clientes.service"));
+const clientes_validator_1 = require("./clientes.validator");
 class ClientesController {
     constructor() {
         this.apiPath = '/api/clientes';
@@ -23,8 +24,8 @@ class ClientesController {
     routes() {
         this.router.get(`${this.apiPath}`, this.getAll);
         this.router.get(`${this.apiPath}/:id`, this.get);
-        this.router.post(`${this.apiPath}`, this.create);
-        this.router.put(`${this.apiPath}/:id`, this.update);
+        this.router.post(`${this.apiPath}`, clientes_validator_1.ValidateCreateCliente, this.create);
+        this.router.put(`${this.apiPath}/:id`, clientes_validator_1.ValidateUpdateCliente, this.update);
         return this.router;
     }
     getAll(req, res) {

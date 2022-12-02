@@ -81,7 +81,7 @@ export default class RutasService {
         }
     }
 
-    public async getAllByIdSede(id: number): Promise<Ruta|null>{
+    public async getAllByIdSede(id: number): Promise<Ruta[]|null>{
         let query = `
             SELECT  
                 a.id, 
@@ -105,7 +105,7 @@ export default class RutasService {
             GROUP BY a.id
         `
         try{
-            const resp = await db.query<Ruta>(query, { replacements: {id}, type: QueryTypes.SELECT, plain: true })
+            const resp = await db.query<Ruta>(query, { replacements: {id}, type: QueryTypes.SELECT })
             return resp
         }
         catch(exception){

@@ -115,7 +115,7 @@ class RutasService {
             GROUP BY a.id
         `;
             try {
-                const resp = yield connection_1.default.query(query, { replacements: { id }, type: sequelize_1.QueryTypes.SELECT, plain: true });
+                const resp = yield connection_1.default.query(query, { replacements: { id }, type: sequelize_1.QueryTypes.SELECT });
                 return resp;
             }
             catch (exception) {

@@ -19,6 +19,7 @@ export default class SedesController{
         try{
             const sedesService = container.resolve(SedesService)
             const resp = await sedesService.getAll()
+            console.log(resp)
             if (resp != null) {
                 return res.status(200).json(resp)
             }

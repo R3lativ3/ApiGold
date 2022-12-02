@@ -29,6 +29,7 @@ class SedesController {
             try {
                 const sedesService = tsyringe_1.container.resolve(sedes_service_1.default);
                 const resp = yield sedesService.getAll();
+                console.log(resp);
                 if (resp != null) {
                     return res.status(200).json(resp);
                 }

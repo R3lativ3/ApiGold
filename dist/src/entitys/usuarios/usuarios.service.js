@@ -105,7 +105,34 @@ class UsuariosService {
                 const resp = yield connection_1.default.query(query, {
                     replacements: { id },
                     type: sequelize_1.QueryTypes.SELECT,
-                    raw: true
+                    plain: true
+                });
+                return resp;
+            }
+            catch (exception) {
+                throw exception;
+            }
+        });
+    }
+    getUserByEmail(email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let query = `
+            SELECT  
+                a.id,
+                a.nombreUsuario,
+                a.emailUsuario,
+                b.tipoUsuario,
+                a.salt
+            FROM usuarios a
+            join tiposUsuarios b
+                on b.id = a.IdTipoUsuario
+            where a.emailUsuario = :email and a.psw: :psw
+        `;
+            try {
+                const resp = yield connection_1.default.query(query, {
+                    replacements: { email },
+                    type: sequelize_1.QueryTypes.SELECT,
+                    plain: true
                 });
                 return resp;
             }
