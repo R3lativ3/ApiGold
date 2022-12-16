@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ValidateCreate = void 0;
+exports.ValidateQueryParams = exports.ValidateCreate = void 0;
 const express_validator_1 = require("express-validator");
 const validateHelper_1 = __importDefault(require("../../helpers/validateHelper"));
 exports.ValidateCreate = [
@@ -23,6 +23,13 @@ exports.ValidateCreate = [
         .exists().withMessage('debes agregar longitud')
         .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
         .isNumeric().withMessage("El valor debe ser numerico"),
+    (req, res, next) => {
+        (0, validateHelper_1.default)(req, res, next);
+    }
+];
+exports.ValidateQueryParams = [
+    (0, express_validator_1.query)('fecha')
+        .isDate().withMessage('Fecha must be a date type'),
     (req, res, next) => {
         (0, validateHelper_1.default)(req, res, next);
     }

@@ -15,3 +15,9 @@ export interface CreateCobrador{
     telefono: string
     idUsuario: number
 }
+
+export interface TotalesPrestamoCobroPorSemana{
+    cobro: number
+    prestamo: number
+    fecha: Date
+}

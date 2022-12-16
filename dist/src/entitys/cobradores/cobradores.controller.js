@@ -22,6 +22,7 @@ class CobradoresController {
     }
     routes() {
         this.router.get(`${this.apiPath}`, this.getAll);
+        this.router.get(`${this.apiPath}/totales-semana-actual/:id`, this.get);
         this.router.get(`${this.apiPath}/:id`, this.get);
         this.router.post(`${this.apiPath}`, this.create);
         this.router.put(`${this.apiPath}/:id`, this.update);
@@ -48,6 +49,19 @@ class CobradoresController {
                 const resp = yield cobradoresService.get(parseInt(id));
                 if (resp == null)
                     return res.status(404).send('not found');
+                return res.status(200).json(resp);
+            }
+            catch (exception) {
+                return res.status(500).send(exception);
+            }
+        });
+    }
+    getTotalesSemanaPorCobradorId(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { id } = req.params;
+                const cobradoresService = tsyringe_1.container.resolve(cobradores_service_1.default);
+                const resp = yield cobradoresService.getTotalesSemanaPorCobradorId(parseInt(id));
                 return res.status(200).json(resp);
             }
             catch (exception) {

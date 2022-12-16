@@ -1,7 +1,7 @@
 import { propertyModel, Response, updateModel, QueryResponse } from '../../app/general';
 import db from "../../db/connection"
 import { QueryTypes } from 'sequelize'
-import { Cobrador, CreateCobrador } from './cobrador.models';
+import { Cobrador, CreateCobrador, TotalesPrestamoCobroPorSemana } from './cobrador.models';
 import { PrestamoPorCobrador } from '../prestamos/prestamos';
 
 export default class CobradoresService {
@@ -122,6 +122,27 @@ export default class CobradoresService {
             return resp
         }catch(exception) {
             throw exception
+        }
+    }
+
+    public async getTotalesSemanaPorCobradorId(idCobrador: number){
+        let query = `
+            select sum(a.cobro) totalCobro, sum(mon.montoConInteres) totalPrestamo, date(a.fecha) fecha
+            from CobroPrestamo a
+            join Prestamo b on a.idPrestamo = b.id
+            join RutaCobrador c on c.id = b.idRutaCobrador and c.idCobrador = 1
+            left join MontoPrestamo mon on b.idMonto = mon.id and yearweek(b.fecha) = yearweek(now())
+            where yearweek(a.fecha) = yearweek(now()) and a.eliminado = false
+            group by date(a.fecha)
+        `
+        try{
+            const resp = await db.query<TotalesPrestamoCobroPorSemana>(query, { 
+                replacements: { idCobrador }, 
+                type: QueryTypes.SELECT
+            })
+            return resp;
+        }catch(exception) {
+            throw exception;
         }
     }
 

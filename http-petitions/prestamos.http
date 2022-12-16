@@ -1,5 +1,8 @@
 GET {{hostname}}/api/prestamos
 
+###
+GET {{hostname}}/api/prestamos/ruta/1
+
 ### CREAR RUTA
 POST {{hostname}}/api/prestamos
 content-type: application/json

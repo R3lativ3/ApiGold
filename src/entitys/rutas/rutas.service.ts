@@ -14,7 +14,7 @@ export default class RutasService {
     }
 
     public async create(body: CreateRuta): Promise<Response> {
-        let query = `INSERT INTO rutas (nombreRuta, idSede, idMunicipio) VALUES (:nombreRuta, :idSede, :idMunicipio)`
+        let query = `INSERT INTO Ruta (nombreRuta, idSede, idMunicipio) VALUES (:nombreRuta, :idSede, :idMunicipio)`
 
         try{
             const replacements = {
@@ -33,7 +33,7 @@ export default class RutasService {
     }
 
     public async update(body:CreateRuta, id: number): Promise<Response> {
-        let query = `UPDATE rutas set nombreRuta = :nombreRuta, idSede = :idSede, idMunicipio = :idMunicipio where id = :id`
+        let query = `UPDATE Ruta set nombreRuta = :nombreRuta, idSede = :idSede, idMunicipio = :idMunicipio where id = :id`
         try{
             const replacements = {
                 nombreRuta: body.nombreRuta,
@@ -63,13 +63,13 @@ export default class RutasService {
                 sum(d.montoEntregado) as capital, 
                 sum(d.montoConInteres) as capitalGanancia, 
                 sum(d.cobroDiario) as cobroDiario
-            FROM rutas a
-            join prestamos b on b.activo = 1
-            join rutasCobradores c on c.idRuta = a.id and c.id = b.idRutaCobrador
-            join MontoPrestamos d on d.id = b.idMonto
-            join sedesGold e on e.id = a.idSede
-            join municipios f on f.id = a.idMunicipio
-            join cobradores g on g.id = c.idCobrador
+            FROM Ruta a
+            join Prestamo b on b.activo = 1
+            join RutaCobrador c on c.idRuta = a.id and c.id = b.idRutaCobrador
+            join MontoPrestamo d on d.id = b.idMonto
+            join Sede e on e.id = a.idSede
+            join Municipio f on f.id = a.idMunicipio
+            join Cobrador g on g.id = c.idCobrador
             GROUP BY a.id
         `
         try{
@@ -94,13 +94,13 @@ export default class RutasService {
                 sum(d.montoEntregado) as capital, 
                 sum(d.montoConInteres) as capitalGanancia, 
                 sum(d.cobroDiario) as cobroDiario
-            FROM rutas a
-            join prestamos b on b.activo = 1
-            join rutasCobradores c on c.idRuta = a.id and c.id = b.idRutaCobrador
-            join MontoPrestamos d on d.id = b.idMonto
-            join sedesGold e on e.id = a.idSede
-            join municipios f on f.id = a.idMunicipio
-            join cobradores g on g.id = c.idCobrador
+            FROM Ruta a
+            join Prestamo b on b.activo = 1
+            join RutaCobrador c on c.idRuta = a.id and c.id = b.idRutaCobrador
+            join MontoPrestamo d on d.id = b.idMonto
+            join Sede e on e.id = a.idSede
+            join Municipio f on f.id = a.idMunicipio
+            join Cobrador g on g.id = c.idCobrador
             WHERE a.idSede = :id
             GROUP BY a.id
         `
@@ -122,11 +122,11 @@ export default class RutasService {
                 c.cobroDiario,
                 d.nombre cliente,
                 sum(e.cobro) totalCobrado
-            FROM prestamos a
-            join rutasCobradores b on a.idRutaCobrador = b.id
-            join MontoPrestamos c on c.id = a.idMonto
-            join clientes d on d.id = a.idCliente
-            join CobrosPrestamos e on e.idPrestamo = a.id
+            FROM Prestamo a
+            join RutaCobrador b on a.idRutaCobrador = b.id
+            join MontoPrestamo c on c.id = a.idMonto
+            join Cliente d on d.id = a.idCliente
+            join CobroPrestamo e on e.idPrestamo = a.id
             WHERE b.idRuta = :id
             GROUP BY a.id
         `

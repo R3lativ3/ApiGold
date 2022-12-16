@@ -140,6 +140,29 @@ class CobradoresService {
             }
         });
     }
+    getTotalesSemanaPorCobradorId(idCobrador) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let query = `
+            select sum(a.cobro) totalCobro, sum(mon.montoConInteres) totalPrestamo, date(a.fecha) fecha
+            from CobroPrestamo a
+            join Prestamo b on a.idPrestamo = b.id
+            join RutaCobrador c on c.id = b.idRutaCobrador and c.idCobrador = 1
+            left join MontoPrestamo mon on b.idMonto = mon.id and yearweek(b.fecha) = yearweek(now())
+            where yearweek(a.fecha) = yearweek(now()) and a.eliminado = false
+            group by date(a.fecha)
+        `;
+            try {
+                const resp = yield connection_1.default.query(query, {
+                    replacements: { idCobrador },
+                    type: sequelize_1.QueryTypes.SELECT
+                });
+                return resp;
+            }
+            catch (exception) {
+                throw exception;
+            }
+        });
+    }
 }
 exports.default = CobradoresService;
 //# sourceMappingURL=cobradores.service.js.map

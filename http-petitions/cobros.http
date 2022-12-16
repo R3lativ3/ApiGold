@@ -1,5 +1,15 @@
 GET {{hostname}}/api/cobros
 
+###
+GET {{hostname}}/api/cobros/2
+
+### send date
+GET {{hostname}}/api/cobros/por-fecha?fecha=12-03-2022
+
+
+### send date
+GET {{hostname}}/api/cobros/por-rango-fechas?idRuta=2
+
 ### CREAR RUTA
 POST {{hostname}}/api/cobros
 content-type: application/json

@@ -24,15 +24,15 @@ export default class PrestamosService {
                 e.cobroDiario cuota,
                 sum(cp.cobro) pagado, 
                 (sum(cp.cobro)/e.montoConInteres)*100 porcentaje
-            from prestamos a
-            join rutasCobradores b on a.idRutaCobrador = b.id
-            join rutas r on b.idRuta = r.id
-            join cobradores co on b.idCobrador = co.id
-            join usuarios c on a.idUsuario = c.id
-            join tiposPrestamos d on a.idTipoPrestamo = d.id
-            join MontoPrestamos e on a.idMonto = e.id
-            join clientes cli on cli.id = a.idCliente
-            left join CobrosPrestamos cp on a.id = cp.idPrestamo and cp.eliminado = false
+            from Prestamo a
+            join RutaCobrador b on a.idRutaCobrador = b.id
+            join Ruta r on b.idRuta = r.id
+            join Cobrador co on b.idCobrador = co.id
+            join Usuario c on a.idUsuario = c.id
+            join TipoPrestamo d on a.idTipoPrestamo = d.id
+            join MontoPrestamo e on a.idMonto = e.id
+            join Cliente cli on cli.id = a.idCliente
+            left join CobroPrestamo cp on a.id = cp.idPrestamo and cp.eliminado = false
             where activo = 1 
             group by a.fecha, a.activo, a.entregaEfectivo, r.nombreRuta, co.nombres, 
             c.nombreUsuario, d.tipoPrestamo, e.montoConInteres, e.porcentajeInteres, e.plazoDias, e.cobroDiario
@@ -65,15 +65,15 @@ export default class PrestamosService {
                 e.cobroDiario cuota,
                 sum(cp.cobro) pagado, 
                 (sum(cp.cobro)/e.montoConInteres)*100 porcentaje
-            from prestamos a
-            join rutasCobradores b on a.idRutaCobrador = b.id
-            join rutas r on b.idRuta = r.id
-            join cobradores co on b.idCobrador = co.id
-            join usuarios c on a.idUsuario = c.id
-            join tiposPrestamos d on a.idTipoPrestamo = d.id
-            join MontoPrestamos e on a.idMonto = e.id
-            join clientes cli on cli.id = a.idCliente
-            left join CobrosPrestamos cp on a.id = cp.idPrestamo and cp.eliminado = false
+            from Prestamo a
+            join RutaCobrador b on a.idRutaCobrador = b.id
+            join Ruta r on b.idRuta = r.id
+            join Cobrador co on b.idCobrador = co.id
+            join Usuario c on a.idUsuario = c.id
+            join TipoPrestamo d on a.idTipoPrestamo = d.id
+            join MontoPrestamo e on a.idMonto = e.id
+            join Cliente cli on cli.id = a.idCliente
+            left join CobroPrestamo cp on a.id = cp.idPrestamo and cp.eliminado = false
             where a.activo = 1 and r.id = :id
             group by a.fecha, a.activo, a.entregaEfectivo, r.nombreRuta, co.nombres, 
             c.nombreUsuario, d.tipoPrestamo, e.montoConInteres, e.porcentajeInteres, e.plazoDias, e.cobroDiario
@@ -106,15 +106,15 @@ export default class PrestamosService {
                 e.cobroDiario cuota,
                 sum(cp.cobro) pagado, 
                 (sum(cp.cobro)/e.montoConInteres)*100 porcentaje
-            from prestamos a
-            join rutasCobradores b on a.idRutaCobrador = b.id
-            join rutas r on b.idRuta = r.id
-            join cobradores co on b.idCobrador = co.id
-            join usuarios c on a.idUsuario = c.id
-            join tiposPrestamos d on a.idTipoPrestamo = d.id
-            join MontoPrestamos e on a.idMonto = e.id
-            join clientes cli on cli.id = a.idCliente
-            left join CobrosPrestamos cp on a.id = cp.idPrestamo
+            from Prestamo a
+            join RutaCobrador b on a.idRutaCobrador = b.id
+            join Ruta r on b.idRuta = r.id
+            join Cobrador co on b.idCobrador = co.id
+            join Usuario c on a.idUsuario = c.id
+            join TipoPrestamo d on a.idTipoPrestamo = d.id
+            join MontoPrestamo e on a.idMonto = e.id
+            join Cliente cli on cli.id = a.idCliente
+            left join CobroPrestamo cp on a.id = cp.idPrestamo
             where a.id = :id
             group by a.fecha, a.activo, a.entregaEfectivo, r.nombreRuta, co.nombres, 
             c.nombreUsuario, d.tipoPrestamo, e.montoConInteres, e.porcentajeInteres, e.plazoDias, e.cobroDiario
@@ -142,7 +142,7 @@ export default class PrestamosService {
 
     async create(body: PrestamoCreate): Promise<Response> {
         let query = `
-            INSERT INTO prestamos (fecha, idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, activo, entregaEfectivo)
+            INSERT INTO Prestamo (fecha, idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, activo, entregaEfectivo)
             VALUES (now(), :idRutaCobrador, :idUsuario, :idCliente, :idTipoPrestamo, :idMonto, 1, :entregaEfectivo)
         `
         try{
@@ -165,7 +165,7 @@ export default class PrestamosService {
 
     async update(body:PrestamoUpdate, id: number): Promise<Response> {
         let query = `
-            UPDATE prestamos 
+            UPDATE Prestamo 
             SET 
                 idRutaCobrador = :idRutaCobrador, 
                 idCliente = :idCliente, 
@@ -192,7 +192,7 @@ export default class PrestamosService {
 
     async delete(id: number): Promise<Response> {
         let query = `
-            UPDATE prestamos 
+            UPDATE Prestamo 
                 SET eliminado = true
             WHERE id = :id
         `

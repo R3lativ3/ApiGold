@@ -19,8 +19,8 @@ class SedesService {
         return __awaiter(this, void 0, void 0, function* () {
             let query = `
             select sede.id, sede.sede, deps.departamento 
-            from sedesGold sede
-            join departamentos deps on deps.id = sede.idDepartamento
+            from Sede sede
+            join Departamento deps on deps.id = sede.idDepartamento
         `;
             try {
                 const resp = yield connection_1.default.query(query, { type: sequelize_1.QueryTypes.SELECT });

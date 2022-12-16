@@ -13,6 +13,7 @@ export default class CobradoresController{
 
     routes(){
         this.router.get(`${this.apiPath}`, this.getAll)
+        this.router.get(`${this.apiPath}/totales-semana-actual/:id`, this.get)
         this.router.get(`${this.apiPath}/:id`, this.get)
         this.router.post(`${this.apiPath}`, this.create)
         this.router.put(`${this.apiPath}/:id`, this.update)
@@ -40,6 +41,18 @@ export default class CobradoresController{
             if(resp == null) 
                 return res.status(404).send('not found')
             
+            return res.status(200).json(resp)
+        }
+        catch(exception){
+            return res.status(500).send(exception)
+        }
+    }
+
+    async getTotalesSemanaPorCobradorId(req: Request, res: Response){
+        try{
+            const { id } = req.params
+            const cobradoresService = container.resolve(CobradoresService)
+            const resp = await cobradoresService.getTotalesSemanaPorCobradorId(parseInt(id))
             return res.status(200).json(resp)
         }
         catch(exception){

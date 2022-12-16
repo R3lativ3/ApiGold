@@ -7,8 +7,8 @@ export default class SedesService {
     async getAll(): Promise<Sede[]>{
         let query = `
             select sede.id, sede.sede, deps.departamento 
-            from sedesGold sede
-            join departamentos deps on deps.id = sede.idDepartamento
+            from Sede sede
+            join Departamento deps on deps.id = sede.idDepartamento
         `
         try{
             const resp = await db.query<Sede>(query, { type: QueryTypes.SELECT })
