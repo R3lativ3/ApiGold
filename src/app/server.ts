@@ -1,9 +1,9 @@
 import 'reflect-metadata'
 import express, { Application } from 'express'
 import cors from 'cors'
+import { container } from 'tsyringe'
 import db from '../db/connection';
 import RutasController from '../entitys/rutas/rutas.controller';
-import { container } from 'tsyringe'
 import PrestamosController from '../entitys/prestamos/prestamos.controller';
 import CreditosController from '../entitys/creditos/creditos.controller';
 import CobrosController from '../entitys/cobros/cobros.controller';
@@ -11,20 +11,25 @@ import CobradoresController from '../entitys/cobradores/cobradores.controller';
 import ClientesController from '../entitys/clientes/clientes.controller';
 import UsuariosController from '../entitys/usuarios/usuarios.controller';
 import SedesController from '../entitys/sedes/sedes.controller';
+import AutenticacionController from '../entitys/autenticacion/autenticacion.controller';
+import multer from "multer"
+
+const storage = multer.diskStorage({
+    destination: function (req: Express.Request, file: Express.Multer.File, callback: (error: Error | null, destination: string) => void) {
+     callback(null, './upload/');
+ }
+})
 
 class Server{
 
-    private app: Application;
+    private app: Application
     private port: string
-    private apiPaths = {
-        usuarios: '/api/usuarios',
-        sedes: '/api/sedes'
-    }
 
     constructor() {
         this.app = express()
         this.port = process.env.PORT || '80'
         console.log(this.port)
+        this.app.use(express.urlencoded({ extended: true }));
         this.databaseConnection()
         this.middlewares()
         this.routes()
@@ -68,6 +73,10 @@ class Server{
 
         const sedes = container.resolve(SedesController)
         this.app.use(sedes.routes())
+
+        const autenticacion = container.resolve(AutenticacionController)
+        this.app.use(autenticacion.routes())
+
     }
 
     listen(){

@@ -119,14 +119,15 @@ class UsuariosService {
             let query = `
             SELECT  
                 a.id,
-                a.nombreUsuario,
-                a.emailUsuario,
+                a.nombreUsuario nombre,
+                a.emailUsuario email,
                 b.tipoUsuario,
-                a.salt
-            FROM usuarios a
-            join tiposUsuarios b
+                a.salt,
+                a.psw
+            FROM Usuario a
+            join TipoUsuario b
                 on b.id = a.IdTipoUsuario
-            where a.emailUsuario = :email and a.psw: :psw
+            where a.emailUsuario = :email
         `;
             try {
                 const resp = yield connection_1.default.query(query, {

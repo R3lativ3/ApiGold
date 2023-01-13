@@ -31,10 +31,10 @@ exports.ValidateCreateCliente = [
         .exists().withMessage('debes agregar negocio')
         .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
         .isBase64().withMessage('debe ser una imagen'),
-    (0, express_validator_1.check)('idMunicipio')
-        .exists().withMessage('Debes agregar idMunicipio')
+    (0, express_validator_1.check)('fotoCasa')
+        .exists().withMessage('debes agregar negocio')
         .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
-        .isNumeric().withMessage('El valor debe ser numerico entero'),
+        .isBase64().withMessage('debe ser una imagen'),
     (req, res, next) => {
         (0, validateHelper_1.default)(req, res, next);
     }

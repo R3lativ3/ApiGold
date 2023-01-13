@@ -11,4 +11,5 @@ const validateResult = (req: any, res: any, next: any) => {
     }
 }
 
+
 export default validateResult

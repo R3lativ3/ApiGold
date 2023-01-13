@@ -3,6 +3,10 @@ GET {{hostname}}/api/cobros
 ###
 GET {{hostname}}/api/cobros/2
 
+
+###
+GET {{hostname}}/api/cobros/disponibles-cobro/1/carioca
+
 ### send date
 GET {{hostname}}/api/cobros/por-fecha?fecha=12-03-2022
 

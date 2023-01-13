@@ -1,28 +1,28 @@
-import { Response } from '../../app/general';
+import { Response, StoreProcedureExecution } from '../../app/general';
 import db from "../../db/connection"
 import { QueryTypes } from 'sequelize'
-import { Cobro, CobroDisponible, CobroPorDia, CobroPorFecha, CobroPost, CobroUpdate } from './cobro.models';
+import { Cobro, CobroDisponible, CobroPorDia, CobroPorFecha, CobroPost, CobroUpdate, TotalCobroPorSemana } from './cobro.models';
+import PrestamosService from '../prestamos/prestamos.service';
+import { container } from 'tsyringe';
 
 class CobrosService {
 
-    public async create(cobro: CobroPost): Promise<Response> {
-        let query = `
-            INSERT INTO CobroPrestamo (cobro, idPrestamo, lat, lon, fecha)
-            VALUES (:cobro, :idPrestamo, :lat, :lon, now())
-        `
+    public async create(cobro: CobroPost): Promise<StoreProcedureExecution | null> {
+        let query = 'CALL AgregarCobro(:idPrestamo, :cobro, :lat, :lon, now())'
         try{
-            const resp = await db.query(query, { 
-                replacements: { 
-                    cobro: cobro.cobro,
-                    idPrestamo: cobro.idPrestamo,
-                    lat: cobro.lat,
-                    lon: cobro.lon
-                },
-                type: QueryTypes.INSERT 
+            const replacements = {
+                cobro: cobro.cobro,
+                idPrestamo: cobro.idPrestamo,
+                lat: cobro.lat,
+                lon: cobro.lon
+            }
+            const resp = await db.query<StoreProcedureExecution>(query, { 
+                replacements, 
+                type:QueryTypes.SELECT,
+                plain:true,
+                mapToModel: true
             })
-            const [results, metadata] = resp
-
-            return { success: true, message: `Cobro Regitrado: ${results}, filas afectadas: ${metadata}`}
+            return resp as StoreProcedureExecution
         }
         catch(exception: any){
             throw exception
@@ -169,7 +169,7 @@ class CobrosService {
 
     public async getDisponiblesPorIdCobrador(idCobrador: number){
         let query = `
-            select pre.id idPrestamo, cob.id idCobro, cob.fecha, cli.nombre, cli.direccion, mon.cobroDiario, mon.montoConInteres, cob.cobro,
+            select pre.id idPrestamo, cob.id idCobro, pre.fecha fechaPrestamo, cob.fecha, cli.nombre, cli.direccion, mon.cobroDiario, mon.montoConInteres, cob.cobro,
             total.total
             from Prestamo pre
             join RutaCobrador rc on rc.id = pre.idRutaCobrador
@@ -182,19 +182,88 @@ class CobrosService {
                 from CobroPrestamo 
                 group by idPrestamo
             ) total on pre.id = total.idPrestamo
-            where co.id = :idCobrador and total.total < mon.montoConInteres
+            where co.id = :idCobrador and (total.total < mon.montoConInteres or total.total is null)
         `
         try{
             const resp = await db.query<CobroDisponible>(query, { 
                 replacements: { idCobrador }, 
                 type: QueryTypes.SELECT
             })
+            const prestamoService = container.resolve(PrestamosService)
+            resp.forEach(x => x.avanceEnDias = prestamoService.avanceEnDias(x.fechaPrestamo, new Date(), x.cobroDiario, x.montoConInteres, x.total))
             return resp;
         }catch(exception) {
             throw exception;
         }
     }
-            
+
+    public async getDisponiblesPorIdCobradorBusqueda(idCobrador: number, busqueda: string){
+        let query = `
+            select pre.id idPrestamo, cob.id idCobro, pre.fecha fechaPrestamo, cob.fecha, cli.nombre, cli.direccion, mon.cobroDiario, mon.montoConInteres, cob.cobro,
+            total.total
+            from Prestamo pre
+            join RutaCobrador rc on rc.id = pre.idRutaCobrador
+            join Cobrador co on co.id = rc.idCobrador
+            join Cliente cli on cli.id = pre.idCliente
+            join MontoPrestamo mon on mon.id = pre.idMonto
+            left join CobroPrestamo cob on cob.idPrestamo = pre.id and date(cob.fecha) = date(now())
+            left join (
+                select idPrestamo, sum(cobro) total 
+                from CobroPrestamo 
+                group by idPrestamo
+            ) total on pre.id = total.idPrestamo
+            where co.id = :idCobrador and (total.total < mon.montoConInteres or total.total is null) and cli.nombre like :nombre
+        `
+        try{
+            const resp = await db.query<CobroDisponible>(query, { 
+                replacements: { idCobrador, nombre: `%${busqueda}%` }, 
+                type: QueryTypes.SELECT
+            })
+            const prestamoService = container.resolve(PrestamosService)
+            resp.forEach(x => x.avanceEnDias = prestamoService.avanceEnDias(x.fechaPrestamo, new Date(), x.cobroDiario, x.montoConInteres, x.total))
+            return resp;
+        }catch(exception) {
+            throw exception;
+        }
+    }
+
+    public async getTotalPorSemana(idCobrador: number){
+        let queryMontoTotal = `
+            select sum(a.cobro) totalCobro, sum(mon.montoConInteres) totalPrestamo, date(a.fecha) fecha
+            from CobroPrestamo a
+            join Prestamo b on a.idPrestamo = b.id
+            join RutaCobrador c on c.id = b.idRutaCobrador and c.idCobrador = :idCobrador
+            left join MontoPrestamo mon on b.idMonto = mon.id and yearweek(b.fecha) = yearweek(now())
+            where yearweek(a.fecha) = yearweek(now()) and a.eliminado = false
+            group by yearweek(a.fecha)
+        `
+
+        let queryDetalleMontoTotal = `
+            select sum(a.cobro) totalCobro, sum(mon.montoConInteres) totalPrestamo, date(a.fecha) fecha
+            from CobroPrestamo a
+            join Prestamo b on a.idPrestamo = b.id
+            join RutaCobrador c on c.id = b.idRutaCobrador and c.idCobrador = :idCobrador
+            left join MontoPrestamo mon on b.idMonto = mon.id and yearweek(b.fecha) = yearweek(now())
+            where yearweek(a.fecha) = yearweek(now()) and a.eliminado = false
+            group by date(a.fecha)
+            order by a.fecha desc
+        `
+        try{
+            const total = await db.query<TotalCobroPorSemana>(queryMontoTotal, { 
+                replacements: { idCobrador }, 
+                type: QueryTypes.SELECT,
+                plain: true
+            })
+
+            const detalle = await db.query<TotalCobroPorSemana>(queryDetalleMontoTotal, { 
+                replacements: { idCobrador }, 
+                type: QueryTypes.SELECT
+            })
+            return {total, detalle};
+        }catch(exception) {
+            throw exception;
+        }
+    }
 
 }
 

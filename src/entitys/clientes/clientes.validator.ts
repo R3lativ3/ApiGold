@@ -7,7 +7,7 @@ export const ValidateCreateCliente = [
     .exists().withMessage('debes agregar nombre')
     .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
     .isLength({min: 2}),
-
+ 
     check('dpi')
     .exists().isString().withMessage('debes agregar dpi')
     .not().isEmpty().withMessage('Debes proporpcionar un valor para este campo')
@@ -25,6 +25,8 @@ export const ValidateCreateCliente = [
     .exists().withMessage('debes agregar ocupacion')
     .not().isEmpty().withMessage('Debes proporcionar un valor para este campo'),
 
+   
+
     check('negocio')
     .exists().withMessage('debes agregar negocio')
     .not().isEmpty().withMessage('Debes proporcionar un valor para este campo'),
@@ -34,10 +36,11 @@ export const ValidateCreateCliente = [
     .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
     .isBase64().withMessage('debe ser una imagen'),
 
-    check('idMunicipio')
-    .exists().withMessage('Debes agregar idMunicipio')
+    check('fotoCasa')
+    .exists().withMessage('debes agregar negocio')
     .not().isEmpty().withMessage('Debes proporcionar un valor para este campo')
-    .isNumeric().withMessage('El valor debe ser numerico entero'),
+    .isBase64().withMessage('debe ser una imagen'),
+    
 
     (req: any, res: any, next: any) => {
         validateResult(req, res, next)

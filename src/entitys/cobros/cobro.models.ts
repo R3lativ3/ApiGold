@@ -47,15 +47,22 @@ export interface CobroPorDia{
     fecha: Date
 }
 
+export interface TotalCobroPorSemana{
+    totalCobro: number
+    totalPrestamo: number
+    fecha: Date
+}
 
 export interface CobroDisponible{
     cobro: number
     cobroDiario: number
     direccion: string
+    fechaPrestamo: Date
     fecha: Date
     idCobro: number
     idPrestamo: number
     montoConInteres: number
     nombre: string 
     total: number
+    avanceEnDias: number
 }

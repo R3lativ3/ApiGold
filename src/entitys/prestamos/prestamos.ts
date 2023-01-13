@@ -20,6 +20,22 @@ export interface Prestamo{
     cobroEnDias: number
 }
 
+export interface PrestamoCompletado{
+    id: number,
+    fecha: Date
+    fechaFin: Date
+    entregaEfectivo: boolean
+    ultimoCobro: number
+    idCliente: number 
+    nombre: string
+    direccion: string
+    cobroDiario: number
+    montoConInteres: number
+    montoEntregado: number
+    porcentajeInteres: number
+    plazoDias: string
+}
+
 export interface PrestamoCreate{
     fecha: Date,
     idRutaCobrador: number

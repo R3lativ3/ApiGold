@@ -14,25 +14,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const connection_1 = __importDefault(require("../../db/connection"));
 const sequelize_1 = require("sequelize");
+const prestamos_service_1 = __importDefault(require("../prestamos/prestamos.service"));
+const tsyringe_1 = require("tsyringe");
 class CobrosService {
     create(cobro) {
         return __awaiter(this, void 0, void 0, function* () {
-            let query = `
-            INSERT INTO CobroPrestamo (cobro, idPrestamo, lat, lon, fecha)
-            VALUES (:cobro, :idPrestamo, :lat, :lon, now())
-        `;
+            let query = 'CALL AgregarCobro(:idPrestamo, :cobro, :lat, :lon, now())';
             try {
+                const replacements = {
+                    cobro: cobro.cobro,
+                    idPrestamo: cobro.idPrestamo,
+                    lat: cobro.lat,
+                    lon: cobro.lon
+                };
                 const resp = yield connection_1.default.query(query, {
-                    replacements: {
-                        cobro: cobro.cobro,
-                        idPrestamo: cobro.idPrestamo,
-                        lat: cobro.lat,
-                        lon: cobro.lon
-                    },
-                    type: sequelize_1.QueryTypes.INSERT
+                    replacements,
+                    type: sequelize_1.QueryTypes.SELECT,
+                    plain: true,
+                    mapToModel: true
                 });
-                const [results, metadata] = resp;
-                return { success: true, message: `Cobro Regitrado: ${results}, filas afectadas: ${metadata}` };
+                return resp;
             }
             catch (exception) {
                 throw exception;
@@ -186,7 +187,7 @@ class CobrosService {
     getDisponiblesPorIdCobrador(idCobrador) {
         return __awaiter(this, void 0, void 0, function* () {
             let query = `
-            select pre.id idPrestamo, cob.id idCobro, cob.fecha, cli.nombre, cli.direccion, mon.cobroDiario, mon.montoConInteres, cob.cobro,
+            select pre.id idPrestamo, cob.id idCobro, pre.fecha fechaPrestamo, cob.fecha, cli.nombre, cli.direccion, mon.cobroDiario, mon.montoConInteres, cob.cobro,
             total.total
             from Prestamo pre
             join RutaCobrador rc on rc.id = pre.idRutaCobrador
@@ -199,14 +200,86 @@ class CobrosService {
                 from CobroPrestamo 
                 group by idPrestamo
             ) total on pre.id = total.idPrestamo
-            where co.id = :idCobrador and total.total < mon.montoConInteres
+            where co.id = :idCobrador and (total.total < mon.montoConInteres or total.total is null)
         `;
             try {
                 const resp = yield connection_1.default.query(query, {
                     replacements: { idCobrador },
                     type: sequelize_1.QueryTypes.SELECT
                 });
+                const prestamoService = tsyringe_1.container.resolve(prestamos_service_1.default);
+                resp.forEach(x => x.avanceEnDias = prestamoService.avanceEnDias(x.fechaPrestamo, new Date(), x.cobroDiario, x.montoConInteres, x.total));
                 return resp;
+            }
+            catch (exception) {
+                throw exception;
+            }
+        });
+    }
+    getDisponiblesPorIdCobradorBusqueda(idCobrador, busqueda) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let query = `
+            select pre.id idPrestamo, cob.id idCobro, pre.fecha fechaPrestamo, cob.fecha, cli.nombre, cli.direccion, mon.cobroDiario, mon.montoConInteres, cob.cobro,
+            total.total
+            from Prestamo pre
+            join RutaCobrador rc on rc.id = pre.idRutaCobrador
+            join Cobrador co on co.id = rc.idCobrador
+            join Cliente cli on cli.id = pre.idCliente
+            join MontoPrestamo mon on mon.id = pre.idMonto
+            left join CobroPrestamo cob on cob.idPrestamo = pre.id and date(cob.fecha) = date(now())
+            left join (
+                select idPrestamo, sum(cobro) total 
+                from CobroPrestamo 
+                group by idPrestamo
+            ) total on pre.id = total.idPrestamo
+            where co.id = :idCobrador and (total.total < mon.montoConInteres or total.total is null) and cli.nombre like :nombre
+        `;
+            try {
+                const resp = yield connection_1.default.query(query, {
+                    replacements: { idCobrador, nombre: `%${busqueda}%` },
+                    type: sequelize_1.QueryTypes.SELECT
+                });
+                const prestamoService = tsyringe_1.container.resolve(prestamos_service_1.default);
+                resp.forEach(x => x.avanceEnDias = prestamoService.avanceEnDias(x.fechaPrestamo, new Date(), x.cobroDiario, x.montoConInteres, x.total));
+                return resp;
+            }
+            catch (exception) {
+                throw exception;
+            }
+        });
+    }
+    getTotalPorSemana(idCobrador) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let queryMontoTotal = `
+            select sum(a.cobro) totalCobro, sum(mon.montoConInteres) totalPrestamo, date(a.fecha) fecha
+            from CobroPrestamo a
+            join Prestamo b on a.idPrestamo = b.id
+            join RutaCobrador c on c.id = b.idRutaCobrador and c.idCobrador = :idCobrador
+            left join MontoPrestamo mon on b.idMonto = mon.id and yearweek(b.fecha) = yearweek(now())
+            where yearweek(a.fecha) = yearweek(now()) and a.eliminado = false
+            group by yearweek(a.fecha)
+        `;
+            let queryDetalleMontoTotal = `
+            select sum(a.cobro) totalCobro, sum(mon.montoConInteres) totalPrestamo, date(a.fecha) fecha
+            from CobroPrestamo a
+            join Prestamo b on a.idPrestamo = b.id
+            join RutaCobrador c on c.id = b.idRutaCobrador and c.idCobrador = :idCobrador
+            left join MontoPrestamo mon on b.idMonto = mon.id and yearweek(b.fecha) = yearweek(now())
+            where yearweek(a.fecha) = yearweek(now()) and a.eliminado = false
+            group by date(a.fecha)
+            order by a.fecha desc
+        `;
+            try {
+                const total = yield connection_1.default.query(queryMontoTotal, {
+                    replacements: { idCobrador },
+                    type: sequelize_1.QueryTypes.SELECT,
+                    plain: true
+                });
+                const detalle = yield connection_1.default.query(queryDetalleMontoTotal, {
+                    replacements: { idCobrador },
+                    type: sequelize_1.QueryTypes.SELECT
+                });
+                return { total, detalle };
             }
             catch (exception) {
                 throw exception;

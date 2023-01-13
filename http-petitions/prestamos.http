@@ -1,4 +1,4 @@
-GET {{hostname}}/api/prestamos
+GET {{hostname}}/api/prestamos/42
 
 ###
 GET {{hostname}}/api/prestamos/ruta/1

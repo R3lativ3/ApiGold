@@ -24,17 +24,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const prestamos_service_1 = __importDefault(require("./prestamos.service"));
 const tsyringe_1 = require("tsyringe");
+const authentication_service_1 = __importDefault(require("../autenticacion/authentication.service"));
 let PrestamosController = class PrestamosController {
     constructor() {
         this.apiPath = '/api/prestamos';
         this.router = (0, express_1.Router)();
     }
     routes() {
-        this.router.get(`${this.apiPath}`, this.getAll);
-        this.router.get(`${this.apiPath}/ruta/:id`, this.getAllByRutaId);
+        const autenticacion = tsyringe_1.container.resolve(authentication_service_1.default);
+        this.router.get(`${this.apiPath}`, autenticacion.isAuthenticated, this.getAll);
+        this.router.get(`${this.apiPath}/completados-por-cliente/:idCliente`, autenticacion.isAuthenticated, this.getAllCompletadosPorCliente);
+        this.router.get(`${this.apiPath}/ruta/:id`, autenticacion.isAuthenticated, this.getAllByRutaId);
         this.router.get(`${this.apiPath}/:id`, this.get);
-        this.router.post(`${this.apiPath}`, this.create);
-        this.router.put(`${this.apiPath}/:id`, this.update);
+        this.router.post(`${this.apiPath}`, autenticacion.isAuthenticated, this.create);
+        this.router.put(`${this.apiPath}/:id`, autenticacion.isAuthenticated, this.update);
         return this.router;
     }
     PrestamoServiceInstance() {
@@ -46,7 +49,7 @@ let PrestamosController = class PrestamosController {
                 const { id } = req.params;
                 const prestamosService = tsyringe_1.container.resolve(prestamos_service_1.default);
                 const response = yield prestamosService.get(parseInt(id));
-                return res.json({ status: 0, response });
+                return res.json(response);
             }
             catch (e) {
                 res.json({ status: 1, response: e });
@@ -62,6 +65,20 @@ let PrestamosController = class PrestamosController {
             }
             catch (e) {
                 return res.json({ status: 1, response: e });
+            }
+        });
+    }
+    getAllCompletadosPorCliente(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { idCliente } = req.params;
+                const user = res.locals.user;
+                const prestamosService = tsyringe_1.container.resolve(prestamos_service_1.default);
+                const response = yield prestamosService.getAllCompletadosPorCliente(parseInt(idCliente), parseInt(user.id));
+                return res.status(200).json(response);
+            }
+            catch (e) {
+                return res.status(500).json(e);
             }
         });
     }

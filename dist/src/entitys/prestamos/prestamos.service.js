@@ -133,8 +133,9 @@ class PrestamosService {
         `;
             let body = `
             select id, cobro, fecha, lat, lon 
-            from CobrosPrestamos 
+            from CobroPrestamo
             where idPrestamo = :id
+            order by fecha desc
         `;
             try {
                 const head = yield connection_1.default.query(header, { replacements: { id }, type: sequelize_1.QueryTypes.SELECT, plain: true });
@@ -149,11 +150,54 @@ class PrestamosService {
             }
         });
     }
+    getAllCompletadosPorCliente(idCliente, idCobrador) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let query = `
+            select pre.id, 
+                pre.fecha, 
+                pre.entregaEfectivo,
+                prex.fecha fechaFin, 
+                prex.cobro ultimoCobro, 
+                cli.id idCliente, 
+                cli.nombre, 
+                cli.direccion, 
+                mon.cobroDiario, 
+                mon.montoConInteres,
+                mon.montoEntregado,
+                mon.porcentajeInteres,
+                mon.plazoDias
+            from Prestamo pre
+            join RutaCobrador rc on rc.id = pre.idRutaCobrador
+            join Cobrador co on co.id = rc.idCobrador
+            join Cliente cli on cli.id = pre.idCliente and cli.id = :idCliente
+            join MontoPrestamo mon on mon.id = pre.idMonto
+            join (
+                select *
+                from CobroPrestamo
+                where id in (
+                    select max(id) from CobroPrestamo group by idPrestamo 
+                )
+            ) prex on prex.idPrestamo = pre.id
+            where co.id = :idCobrador
+                and cli.id in (
+                    select idCliente from Prestamo where activo = 0
+                )		
+            group by(pre.id);
+        `;
+            try {
+                const resp = yield connection_1.default.query(query, { replacements: { idCliente, idCobrador }, type: sequelize_1.QueryTypes.SELECT });
+                return resp;
+            }
+            catch (exception) {
+                throw exception;
+            }
+        });
+    }
     create(body) {
         return __awaiter(this, void 0, void 0, function* () {
             let query = `
-            INSERT INTO Prestamo (fecha, idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, activo, entregaEfectivo)
-            VALUES (now(), :idRutaCobrador, :idUsuario, :idCliente, :idTipoPrestamo, :idMonto, 1, :entregaEfectivo)
+            INSERT INTO ZXCcxx (fecha, idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, activo, entregaEfectivo)
+            VALUES (now(), :idRgasdfautaCobrador, :idUsuario, :idCliente, :idTipoPrestamo, :idMonto, 1, :entregaEfectivo)
         `;
             try {
                 const replacements = {
@@ -222,9 +266,12 @@ class PrestamosService {
         });
     }
     avanceEnDias(fechaInicio, fechaFin, montoDiario, montoEntregado, montoPagado) {
-        let daysDiff = fechaFin.getDate() - fechaInicio.getDate();
+        const _MS_PER_DAY = 1000 * 60 * 60 * 24;
+        const utc1 = Date.UTC(fechaInicio.getFullYear(), fechaInicio.getMonth(), fechaInicio.getDate());
+        const utc2 = Date.UTC(fechaFin.getFullYear(), fechaFin.getMonth(), fechaFin.getDate());
+        let daysDiff = Math.floor((utc2 - utc1) / _MS_PER_DAY);
         let diasPagados = montoPagado / montoDiario;
-        return daysDiff - diasPagados;
+        return diasPagados - daysDiff;
     }
 }
 exports.default = PrestamosService;

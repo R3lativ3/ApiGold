@@ -13,17 +13,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const crypto_1 = __importDefault(require("crypto"));
+const crypto_js_1 = __importDefault(require("crypto-js"));
 class TokenService {
-    encrypt(salt, psw) {
-        const key = crypto_1.default.pbkdf2Sync(psw, salt, 1000, 64, 'sha1');
-        return key.toString('base64');
+    encryptJs(psw) {
+        return crypto_js_1.default.AES.encrypt(psw, 'perromon').toString();
     }
-    signPsw(psw) {
-        const salt = crypto_1.default.randomBytes(16).toString('base64');
-        const encrypted = this.encrypt(salt, psw);
-        console.log(encrypted);
-        return { salt, key: encrypted };
+    decryptJs(encrypt) {
+        const bytes = crypto_js_1.default.AES.decrypt(encrypt, 'perromon');
+        const text = bytes.toString(crypto_js_1.default.enc.Utf8);
+        return text;
     }
     getToken(idUsuario, nombre, rol) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -32,15 +30,15 @@ class TokenService {
                 name: nombre,
                 rol
             };
-            const token = jsonwebtoken_1.default.sign(claims, 'jajajaja', { expiresIn: '60 minute' });
+            const token = jsonwebtoken_1.default.sign(claims, 'jajajaja', { expiresIn: '1 year' });
             return token;
         });
     }
     validateToken(token) {
         if (!token)
-            return false;
+            return "";
         const decoded = jsonwebtoken_1.default.verify(token, 'jajajaja');
-        return (decoded === null || decoded === void 0 ? void 0 : decoded.length) > 0;
+        return decoded;
     }
 }
 exports.default = TokenService;

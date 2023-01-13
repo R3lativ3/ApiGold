@@ -1,17 +1,16 @@
 import jwt, { JwtPayload } from 'jsonwebtoken'
 import crypto from 'crypto'
-
+import CryptoJS from 'crypto-js'
 export default class TokenService{
-    public encrypt(salt: string, psw: string){
-        const key = crypto.pbkdf2Sync(psw, salt, 1000, 64, 'sha1')
-        return key.toString('base64')
+
+    public encryptJs(psw: string){
+        return CryptoJS.AES.encrypt(psw, 'perromon').toString()
     }
 
-    public signPsw(psw: string): {salt: string, key: string}{
-        const salt = crypto.randomBytes(16).toString('base64')
-        const encrypted = this.encrypt(salt, psw)
-        console.log(encrypted)
-        return {salt, key : encrypted}
+    public decryptJs(encrypt: string){
+        const bytes = CryptoJS.AES.decrypt(encrypt, 'perromon')
+        const text = bytes.toString(CryptoJS.enc.Utf8)
+        return text
     }
 
     async getToken(idUsuario: number, nombre: string, rol: string){
@@ -20,15 +19,15 @@ export default class TokenService{
             name: nombre, 
             rol
         }
-        const token = jwt.sign( claims,  'jajajaja', {  expiresIn: '60 minute' })
+        const token = jwt.sign(claims,  'jajajaja', {  expiresIn: '1 year' })
         return token
     }
 
     validateToken(token: string){
         if(!token)
-            return false
+            return ""
 
         const decoded = jwt.verify(token, 'jajajaja')
-        return decoded?.length > 0
+        return decoded
     }
 }

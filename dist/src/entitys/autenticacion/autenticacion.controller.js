@@ -22,7 +22,7 @@ class AutenticacionController {
         this.router = (0, express_1.Router)();
     }
     routes() {
-        this.router.get(`${this.apiPath}`, autenticacion_validator_1.ValidateLogin, this.login);
+        this.router.post(this.apiPath, autenticacion_validator_1.ValidateLogin, this.login);
         return this.router;
     }
     login(req, res) {
@@ -31,12 +31,14 @@ class AutenticacionController {
                 const { body } = req;
                 const autenticacionService = tsyringe_1.container.resolve(authentication_service_1.default);
                 const resp = yield autenticacionService.login(body);
+                console.log(resp);
                 if (resp === null) {
                     return res.status(200).json({ error: "Usuario o contraseña invalidos" });
                 }
                 return res.status(200).json(resp);
             }
             catch (exception) {
+                console.log(exception);
                 return res.status(500).send(exception);
             }
         });

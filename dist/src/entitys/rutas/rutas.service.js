@@ -150,6 +150,18 @@ class RutasService {
             }
         });
     }
+    ObtenerIdRutaPorIdCobrador(idCobrador) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let query = ` select idRuta from RutaCobrador where idCobrador = :idCobrador  `;
+                const resp = yield connection_1.default.query(query, { replacements: { idCobrador }, plain: true });
+                return resp === null ? null : resp.idRuta;
+            }
+            catch (exception) {
+                throw exception;
+            }
+        });
+    }
 }
 exports.default = RutasService;
 //# sourceMappingURL=rutas.service.js.map

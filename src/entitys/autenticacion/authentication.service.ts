@@ -4,7 +4,11 @@ import { Loged, Login } from './autenticacion.models'
 import { container } from 'tsyringe'
 import UsuariosService from '../usuarios/usuarios.service'
 import TokenService from './token.service'
+import { NextFunction, Request, Response } from 'express'
 export default class AuthenticacionService{
+
+    constructor(){
+    }
 
     async login(credentials: Login): Promise<Loged | null>{
         try{
@@ -14,9 +18,8 @@ export default class AuthenticacionService{
                 return null
             
             const tokenService = container.resolve(TokenService)
-            const encrypted = tokenService.encrypt(credentials.psw, user.salt)
-
-            if(encrypted !== user.psw)
+            const enc = tokenService.decryptJs(user.psw)
+            if(enc !== credentials.psw)
                 return null
 
             let token = await tokenService.getToken(user.id, user.nombre, user.tipoUsuario)
@@ -28,7 +31,14 @@ export default class AuthenticacionService{
         }
     }
 
-    constructor(){
+    public async isAuthenticated(req: Request, res: Response, next: NextFunction){
+        const token = req.headers.authorization
+        if(!token){
+            return res.sendStatus(403)
+        }
+        const tokenService = container.resolve(TokenService)
+        const validated = tokenService.validateToken(token)
+        res.locals.user = validated
+        return validated ? next() : res.sendStatus(403) 
     }
-
 }

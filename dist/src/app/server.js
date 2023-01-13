@@ -15,9 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const tsyringe_1 = require("tsyringe");
 const connection_1 = __importDefault(require("../db/connection"));
 const rutas_controller_1 = __importDefault(require("../entitys/rutas/rutas.controller"));
-const tsyringe_1 = require("tsyringe");
 const prestamos_controller_1 = __importDefault(require("../entitys/prestamos/prestamos.controller"));
 const creditos_controller_1 = __importDefault(require("../entitys/creditos/creditos.controller"));
 const cobros_controller_1 = __importDefault(require("../entitys/cobros/cobros.controller"));
@@ -25,15 +25,19 @@ const cobradores_controller_1 = __importDefault(require("../entitys/cobradores/c
 const clientes_controller_1 = __importDefault(require("../entitys/clientes/clientes.controller"));
 const usuarios_controller_1 = __importDefault(require("../entitys/usuarios/usuarios.controller"));
 const sedes_controller_1 = __importDefault(require("../entitys/sedes/sedes.controller"));
+const autenticacion_controller_1 = __importDefault(require("../entitys/autenticacion/autenticacion.controller"));
+const multer_1 = __importDefault(require("multer"));
+const storage = multer_1.default.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, './upload/');
+    }
+});
 class Server {
     constructor() {
-        this.apiPaths = {
-            usuarios: '/api/usuarios',
-            sedes: '/api/sedes'
-        };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || '80';
         console.log(this.port);
+        this.app.use(express_1.default.urlencoded({ extended: true }));
         this.databaseConnection();
         this.middlewares();
         this.routes();
@@ -70,6 +74,8 @@ class Server {
         this.app.use(usuarios.routes());
         const sedes = tsyringe_1.container.resolve(sedes_controller_1.default);
         this.app.use(sedes.routes());
+        const autenticacion = tsyringe_1.container.resolve(autenticacion_controller_1.default);
+        this.app.use(autenticacion.routes());
     }
     listen() {
         this.app.listen(this.port, () => {

@@ -1,4 +1,4 @@
-GET {{hostname}}/api/clientes
+GET {{hostname}}/api/clientes/199
 
 ### CREAR RUTA
 POST {{hostname}}/api/clientes

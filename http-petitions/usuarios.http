@@ -1,10 +1,12 @@
 GET {{hostname}}/api/usuarios
 
 ### CREAR RUTA
-POST {{hostname}}/api/usuarios
+POST  {{hostname}}/api/login
 content-type: application/json
 
 {
+    "username":"perromon",
+    "psw":"psdsdsdsds"
 }
 
 ### CREAR RUTA

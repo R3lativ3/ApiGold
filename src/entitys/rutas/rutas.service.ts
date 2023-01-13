@@ -140,4 +140,15 @@ export default class RutasService {
         }
     }
 
+    public async ObtenerIdRutaPorIdCobrador(idCobrador :number): Promise<number | null>{
+        try{
+            let query = ` select idRuta from RutaCobrador where idCobrador = :idCobrador  `
+            const resp = await db.query(query, { replacements: { idCobrador }, plain: true })
+            return resp === null ? null : resp.idRuta as number
+        }
+        catch(exception){
+            throw exception
+        }
+    }
+
 }

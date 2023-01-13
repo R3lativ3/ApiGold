@@ -16,6 +16,8 @@ const tsyringe_1 = require("tsyringe");
 const usuarios_service_1 = __importDefault(require("../usuarios/usuarios.service"));
 const token_service_1 = __importDefault(require("./token.service"));
 class AuthenticacionService {
+    constructor() {
+    }
     login(credentials) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -24,8 +26,8 @@ class AuthenticacionService {
                 if (!user)
                     return null;
                 const tokenService = tsyringe_1.container.resolve(token_service_1.default);
-                const encrypted = tokenService.encrypt(credentials.psw, user.salt);
-                if (encrypted !== user.psw)
+                const enc = tokenService.decryptJs(user.psw);
+                if (enc !== credentials.psw)
                     return null;
                 let token = yield tokenService.getToken(user.id, user.nombre, user.tipoUsuario);
                 let response = { username: user.email, nombre: user.nombre, token };
@@ -36,7 +38,17 @@ class AuthenticacionService {
             }
         });
     }
-    constructor() {
+    isAuthenticated(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const token = req.headers.authorization;
+            if (!token) {
+                return res.sendStatus(403);
+            }
+            const tokenService = tsyringe_1.container.resolve(token_service_1.default);
+            const validated = tokenService.validateToken(token);
+            res.locals.user = validated;
+            return validated ? next() : res.sendStatus(403);
+        });
     }
 }
 exports.default = AuthenticacionService;

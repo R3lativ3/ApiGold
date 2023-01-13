@@ -17,3 +17,8 @@ export interface QueryResponse {
     success: boolean,
     response: any
 }
+
+export interface StoreProcedureExecution{
+    message: string
+    status: number
+}

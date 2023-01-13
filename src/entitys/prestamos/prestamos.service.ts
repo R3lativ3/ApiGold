@@ -1,7 +1,7 @@
 import { Response } from '../../app/general';
 import db from "../../db/connection"
 import { QueryTypes } from 'sequelize'
-import { PrestamoCreate, PrestamoDetail, Prestamo, PrestamoUpdate } from './prestamos';
+import { PrestamoCreate, PrestamoDetail, Prestamo, PrestamoUpdate, PrestamoCompletado } from './prestamos';
 import { CobroDetalle } from '../cobros/cobro.models';
 
 export default class PrestamosService {
@@ -122,8 +122,9 @@ export default class PrestamosService {
 
         let body = `
             select id, cobro, fecha, lat, lon 
-            from CobrosPrestamos 
+            from CobroPrestamo
             where idPrestamo = :id
+            order by fecha desc
         ` 
                     
         try{
@@ -140,10 +141,53 @@ export default class PrestamosService {
         }
     }
 
+
+    async getAllCompletadosPorCliente(idCliente: number, idCobrador: number){
+        let query = `
+            select pre.id, 
+                pre.fecha, 
+                pre.entregaEfectivo,
+                prex.fecha fechaFin, 
+                prex.cobro ultimoCobro, 
+                cli.id idCliente, 
+                cli.nombre, 
+                cli.direccion, 
+                mon.cobroDiario, 
+                mon.montoConInteres,
+                mon.montoEntregado,
+                mon.porcentajeInteres,
+                mon.plazoDias
+            from Prestamo pre
+            join RutaCobrador rc on rc.id = pre.idRutaCobrador
+            join Cobrador co on co.id = rc.idCobrador
+            join Cliente cli on cli.id = pre.idCliente and cli.id = :idCliente
+            join MontoPrestamo mon on mon.id = pre.idMonto
+            join (
+                select *
+                from CobroPrestamo
+                where id in (
+                    select max(id) from CobroPrestamo group by idPrestamo 
+                )
+            ) prex on prex.idPrestamo = pre.id
+            where co.id = :idCobrador
+                and cli.id in (
+                    select idCliente from Prestamo where activo = 0
+                )		
+            group by(pre.id);
+        ` 
+        try{
+            const resp = await db.query<PrestamoCompletado>(query, { replacements: { idCliente, idCobrador }, type: QueryTypes.SELECT })
+            return resp
+        }
+        catch(exception){
+            throw exception
+        }
+    }
+
     async create(body: PrestamoCreate): Promise<Response> {
         let query = `
-            INSERT INTO Prestamo (fecha, idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, activo, entregaEfectivo)
-            VALUES (now(), :idRutaCobrador, :idUsuario, :idCliente, :idTipoPrestamo, :idMonto, 1, :entregaEfectivo)
+            INSERT INTO ZXCcxx (fecha, idRutaCobrador, idUsuario, idCliente, idTipoPrestamo, idMonto, activo, entregaEfectivo)
+            VALUES (now(), :idRgasdfautaCobrador, :idUsuario, :idCliente, :idTipoPrestamo, :idMonto, 1, :entregaEfectivo)
         `
         try{
             const replacements = {
@@ -209,9 +253,14 @@ export default class PrestamosService {
         }
     }
 
-    private avanceEnDias(fechaInicio: Date, fechaFin: Date, montoDiario: number, montoEntregado: number, montoPagado: number){
-        let daysDiff = fechaFin.getDate() - fechaInicio.getDate()
+    public avanceEnDias(fechaInicio: Date, fechaFin: Date, montoDiario: number, montoEntregado: number, montoPagado: number){
+        const _MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+        const utc1 = Date.UTC(fechaInicio.getFullYear(), fechaInicio.getMonth(), fechaInicio.getDate());
+        const utc2 = Date.UTC(fechaFin.getFullYear(), fechaFin.getMonth(), fechaFin.getDate());
+      
+        let daysDiff = Math.floor((utc2 - utc1) / _MS_PER_DAY);
         let diasPagados = montoPagado / montoDiario
-        return daysDiff - diasPagados
+        return diasPagados - daysDiff 
     } 
 }

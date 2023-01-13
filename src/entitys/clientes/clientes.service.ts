@@ -5,6 +5,7 @@ import { Response } from "../../app/general"
 import { Express, response } from "express"
 import Resize from "../../helpers/Resize"
 import path from 'path'
+import multer from "multer"
 
 export default class ClientesService {
 
@@ -22,8 +23,8 @@ export default class ClientesService {
                 direccion,
                 nit,
                 referencia,
-                fechaCreado
-            from clientes
+                createdAt
+            from Cliente
         `
         const resx = await db.query<Cliente>(query, { type: QueryTypes.SELECT })
         return resx
@@ -43,11 +44,11 @@ export default class ClientesService {
                 direccion,
                 nit,
                 referencia,
-                fechaCreado
-            from clientes
+                createdAt
+            from Cliente
             where id = :id
         `
-        const resp = await db.query(query, { replacements: { id }, type: QueryTypes.SELECT })
+        const resp = await db.query<Cliente>(query, { replacements: { id }, type: QueryTypes.SELECT, plain: true })
         return resp
     }
     
@@ -77,14 +78,87 @@ export default class ClientesService {
         const resp = await db.query<PrestamoCliente>(query, { replacements: { id }, type: QueryTypes.SELECT })
         return resp
     }
-    
-    async create(body: CreateCliente): Promise<Response>{
-        let query = `
-            insert into clientes (nombre, dpi, telefono, telefono2, ocupacion, negocio, foto, fotoCasa, direccion, nit, referencia)
-            values (:nombre, :dpi, :telefono, :telefono2, :ocupacion, :negocio, :foto, :fotoCasa, :direccion, :nit, :referencia)
-        `
+
+    async getClientesPorCobrador (idRuta: number){
         try{
-            const f = 'hola'
+            let query = `
+                select cli.idRuta, 
+                    cli.id, 
+                    cli.nombre, 
+                    cli.dpi, 
+                    cli.telefono, 
+                    cli.telefono2, 
+                    cli.ocupacion, 
+                    cli.negocio, 
+                    cli.foto, 
+                    cli.fotoCasa, 
+                    cli.direccion,
+                    cli.nit, 
+                    cli.referencia, 
+                    cli.createdAt fechaCreado
+                from Cliente cli
+                left join Prestamo pre on pre.idCliente = cli.id
+                left join RutaCobrador rc on rc.id = pre.idRutaCobrador
+                where cli.idRuta = :idRuta and 
+                (	cli.id not in (select idCliente from Prestamo where activo = 1) or
+                    pre.id is null 
+                ) 
+                group by (cli.id)
+            `
+            const resp = await db.query<Cliente>(query, { replacements: { idRuta }, type: QueryTypes.SELECT })
+            return resp
+        }
+        catch(excepcion){
+            throw excepcion
+        }
+    }
+
+
+    async getClientesPorIdRutaNombre(idRuta: number, nombre: string){
+        try{
+            let query = `
+                select cli.idRuta, 
+                    cli.id, 
+                    cli.nombre, 
+                    cli.dpi, 
+                    cli.telefono, 
+                    cli.telefono2, 
+                    cli.ocupacion, 
+                    cli.negocio, 
+                    cli.foto, 
+                    cli.fotoCasa, 
+                    cli.direccion,
+                    cli.nit, 
+                    cli.referencia, 
+                    cli.createdAt fechaCreado
+                from Cliente cli
+                left join Prestamo pre on pre.idCliente = cli.id
+                left join RutaCobrador rc on rc.id = pre.idRutaCobrador
+                where cli.idRuta = :idRuta and 
+                    cli.nombre like :nombre and
+                (	
+                    cli.id not in (select idCliente from Prestamo where activo = 1) or
+                    pre.id is null 
+                ) 
+                group by (cli.id)
+            `
+            const resp = await db.query<Cliente>(query, { replacements: { idRuta, nombre: `%${nombre}%` }, type: QueryTypes.SELECT })
+            return resp
+        }
+        catch(excepcion){
+            throw excepcion
+        }
+    }
+    
+    async create(body: CreateCliente, idCobrador: number): Promise<Response>{
+        try{
+            let getIdRutaQuery = 'select idRuta from RutaCobrador where idCobrador = :idCobrador'
+            const response = await db.query(getIdRutaQuery, { replacements: {idCobrador}, plain: true })
+
+            let query = `
+                insert into Cliente (nombre, dpi, telefono, telefono2, ocupacion, negocio, foto, fotoCasa, direccion, nit, referencia, :idRuta, createdAt)
+                values (:nombre, :dpi, :telefono, :telefono2, :ocupacion, :negocio, :foto, :fotoCasa, :direccion, :nit, :referencia, :idRuta, :createdAt)
+            `
             const replacements = {
                 nombre: body.nombre,
                 dpi: body.dpi,
@@ -92,20 +166,16 @@ export default class ClientesService {
                 telefono2: body.telefono2,
                 ocupacion: body.ocupacion,
                 negocio: body.negocio,
-                foto: body.foto?.name,
-                fotoCasa: body.fotoCasa?.name,
+                foto: body.foto,
+                fotoCasa: body.fotoCasa,
                 direccion: body.direccion,
                 nit: body.nit,
-                referencia: body.referencia
-            }
-            const imgPath = path.join(__dirname, '/public/images')
-            const resize = new Resize(imgPath)
-            if(body.foto){
-                const arrBuf = await body.foto.arrayBuffer()
-                const fileName = await resize.save(Buffer.from(arrBuf)).then(console.log)
-                console.log(fileName)
+                referencia: body.referencia,
+                idRuta: response!.idRuta,
+                createdAt: new Date()
             }
             const resp = await db.query(query, { replacements, type: QueryTypes.INSERT})
+            console.log(resp)
             return { success: true, message: 'Cliente creado con exito: ' }
         }
         catch(exception){

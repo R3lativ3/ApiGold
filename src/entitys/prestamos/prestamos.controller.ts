@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express"
 import PrestamosService from "./prestamos.service"
 import { autoInjectable, container } from "tsyringe"
+import AuthenticacionService from "../autenticacion/authentication.service"
 
 @autoInjectable()
 export default class PrestamosController{
@@ -12,11 +13,13 @@ export default class PrestamosController{
     }
 
     routes(){
-        this.router.get(`${this.apiPath}`, this.getAll)
-        this.router.get(`${this.apiPath}/ruta/:id`, this.getAllByRutaId)
-        this.router.get(`${this.apiPath}/:id`, this.get)
-        this.router.post(`${this.apiPath}`, this.create)
-        this.router.put(`${this.apiPath}/:id`, this.update)
+        const autenticacion = container.resolve(AuthenticacionService)
+        this.router.get(`${this.apiPath}`, autenticacion.isAuthenticated, this.getAll)
+        this.router.get(`${this.apiPath}/completados-por-cliente/:idCliente`, autenticacion.isAuthenticated, this.getAllCompletadosPorCliente)
+        this.router.get(`${this.apiPath}/ruta/:id`, autenticacion.isAuthenticated, this.getAllByRutaId)
+        this.router.get(`${this.apiPath}/:id`,  this.get)
+        this.router.post(`${this.apiPath}`, autenticacion.isAuthenticated, this.create)
+        this.router.put(`${this.apiPath}/:id`, autenticacion.isAuthenticated, this.update)
 
         return this.router
     }
@@ -30,7 +33,7 @@ export default class PrestamosController{
             const { id } = req.params
             const prestamosService = container.resolve(PrestamosService)
             const response = await prestamosService.get(parseInt(id))
-            return res.json({ status: 0, response })
+            return res.json(response)
         }
         catch(e){
             res.json({ status: 1, response: e })
@@ -45,6 +48,19 @@ export default class PrestamosController{
         }
         catch(e){
             return res.json({ status: 1, response: e })
+        }
+    }
+
+    async getAllCompletadosPorCliente(req: Request, res: Response){
+        try{
+            const { idCliente } = req.params
+            const user = res.locals.user
+            const prestamosService = container.resolve(PrestamosService)
+            const response = await prestamosService.getAllCompletadosPorCliente(parseInt(idCliente), parseInt(user.id))
+            return res.status(200).json(response)
+        }
+        catch(e){
+            return res.status(500).json(e)
         }
     }
 
