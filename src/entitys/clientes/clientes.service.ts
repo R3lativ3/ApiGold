@@ -27,6 +27,10 @@ export default class ClientesService {
             from Cliente
         `
         const resx = await db.query<Cliente>(query, { type: QueryTypes.SELECT })
+        resx.forEach(x => {
+            x.foto ? x.foto = 'http://localhost:8000/'+x.foto : null;
+            x.fotoCasa ? x.fotoCasa = 'http://localhost:8000/'+x.fotoCasa : null;
+        })
         return resx
     }
     
@@ -49,6 +53,9 @@ export default class ClientesService {
             where id = :id
         `
         const resp = await db.query<Cliente>(query, { replacements: { id }, type: QueryTypes.SELECT, plain: true })
+        resp?.foto ? resp.foto = 'http://localhost:8000/'+resp.foto : null
+        resp?.fotoCasa ? resp.fotoCasa = 'http://localhost:8000/'+resp.fotoCasa : null
+
         return resp
     }
     

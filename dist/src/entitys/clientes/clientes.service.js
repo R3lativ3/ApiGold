@@ -34,6 +34,10 @@ class ClientesService {
             from Cliente
         `;
             const resx = yield connection_1.default.query(query, { type: sequelize_1.QueryTypes.SELECT });
+            resx.forEach(x => {
+                x.foto ? x.foto = 'http://localhost:8000/' + x.foto : null;
+                x.fotoCasa ? x.fotoCasa = 'http://localhost:8000/' + x.fotoCasa : null;
+            });
             return resx;
         });
     }
@@ -57,6 +61,8 @@ class ClientesService {
             where id = :id
         `;
             const resp = yield connection_1.default.query(query, { replacements: { id }, type: sequelize_1.QueryTypes.SELECT, plain: true });
+            (resp === null || resp === void 0 ? void 0 : resp.foto) ? resp.foto = 'http://localhost:8000/' + resp.foto : null;
+            (resp === null || resp === void 0 ? void 0 : resp.fotoCasa) ? resp.fotoCasa = 'http://localhost:8000/' + resp.fotoCasa : null;
             return resp;
         });
     }

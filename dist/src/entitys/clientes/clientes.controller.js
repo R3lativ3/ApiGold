@@ -26,7 +26,7 @@ class ClientesController {
     }
     routes() {
         const autenticacion = tsyringe_1.container.resolve(authentication_service_1.default);
-        this.router.get(`${this.apiPath}`, autenticacion.isAuthenticated, this.getAll);
+        this.router.get(`${this.apiPath}`, this.getAll);
         this.router.get(`${this.apiPath}/por-cobrador/:nombre`, autenticacion.isAuthenticated, this.getClientesPorCobradorBusqueda);
         this.router.get(`${this.apiPath}/por-cobrador`, autenticacion.isAuthenticated, this.getClientesPorCobrador);
         this.router.get(`${this.apiPath}/:id`, autenticacion.isAuthenticated, this.get);

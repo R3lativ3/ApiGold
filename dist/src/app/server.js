@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const path_1 = __importDefault(require("path"));
 const tsyringe_1 = require("tsyringe");
 const connection_1 = __importDefault(require("../db/connection"));
 const rutas_controller_1 = __importDefault(require("../entitys/rutas/rutas.controller"));
@@ -26,17 +27,14 @@ const clientes_controller_1 = __importDefault(require("../entitys/clientes/clien
 const usuarios_controller_1 = __importDefault(require("../entitys/usuarios/usuarios.controller"));
 const sedes_controller_1 = __importDefault(require("../entitys/sedes/sedes.controller"));
 const autenticacion_controller_1 = __importDefault(require("../entitys/autenticacion/autenticacion.controller"));
-const multer_1 = __importDefault(require("multer"));
-const storage = multer_1.default.diskStorage({
-    destination: function (req, file, callback) {
-        callback(null, './upload/');
-    }
-});
 class Server {
     constructor() {
+        this.dir = path_1.default.join(__dirname, '/../../uploads');
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || '80';
         console.log(this.port);
+        console.log(this.dir);
+        this.app.use(express_1.default.static(this.dir));
         this.app.use(express_1.default.urlencoded({ extended: true }));
         this.databaseConnection();
         this.middlewares();

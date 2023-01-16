@@ -13,10 +13,10 @@ export default class ClientesController{
     constructor(){
         this.router = Router()
     }
-
+    
     routes(){
         const autenticacion = container.resolve(AuthenticacionService)
-        this.router.get(`${this.apiPath}`,autenticacion.isAuthenticated, this.getAll)
+        this.router.get(`${this.apiPath}`, this.getAll)
         this.router.get(`${this.apiPath}/por-cobrador/:nombre`, autenticacion.isAuthenticated, this.getClientesPorCobradorBusqueda)
         this.router.get(`${this.apiPath}/por-cobrador`, autenticacion.isAuthenticated, this.getClientesPorCobrador)
         this.router.get(`${this.apiPath}/:id`, autenticacion.isAuthenticated, this.get)

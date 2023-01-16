@@ -1,6 +1,8 @@
 import 'reflect-metadata'
 import express, { Application } from 'express'
 import cors from 'cors'
+import multer from "multer"
+import path from 'path'
 import { container } from 'tsyringe'
 import db from '../db/connection';
 import RutasController from '../entitys/rutas/rutas.controller';
@@ -12,23 +14,20 @@ import ClientesController from '../entitys/clientes/clientes.controller';
 import UsuariosController from '../entitys/usuarios/usuarios.controller';
 import SedesController from '../entitys/sedes/sedes.controller';
 import AutenticacionController from '../entitys/autenticacion/autenticacion.controller';
-import multer from "multer"
 
-const storage = multer.diskStorage({
-    destination: function (req: Express.Request, file: Express.Multer.File, callback: (error: Error | null, destination: string) => void) {
-     callback(null, './upload/');
- }
-})
 
 class Server{
 
     private app: Application
     private port: string
+    private dir = path.join(__dirname, '/../../uploads');
 
     constructor() {
         this.app = express()
         this.port = process.env.PORT || '80'
         console.log(this.port)
+        console.log(this.dir)
+        this.app.use(express.static(this.dir))
         this.app.use(express.urlencoded({ extended: true }));
         this.databaseConnection()
         this.middlewares()
@@ -36,6 +35,7 @@ class Server{
     }
     
     middlewares(){
+
         this.app.use(cors())
         this.app.use(express.json())
     }
